@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamVault - Video Hub</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #121212; color: #e0e0e0; font-family: Arial, sans-serif; }
+        header { background: #1f1f1f; padding: 20px; text-align: center; border-bottom: 2px solid #333; }
+        header h1 { color: #ff4757; font-size: 26px; letter-spacing: 1px; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        
+        /* 图片上的网格导航样式 */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            background: #181818;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-bottom: 30px;
+        }
+        .nav-item {
+            background: #222;
+            padding: 12px 10px;
+            text-align: center;
+            color: #ccc;
+            text-decoration: none;
+            font-size: 13px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            border: 1px solid #2c2c2c;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .nav-item:hover {
+            background: #ff4757;
+            color: #fff;
+            border-color: #ff6b81;
+        }
+
+        .section-title {
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-left: 4px solid #ff4757;
+            padding-left: 10px;
+            color: #fff;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+        }
+        .video-card {
+            background: #1e1e1e;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #333;
+            transition: transform 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .video-card:hover {
+            transform: translateY(-3px);
+            border-color: #555;
+        }
+        .video-thumb {
+            width: 100%;
+            height: 140px;
+            background: #2a2a2a;
+            object-fit: cover;
+        }
+        .video-info {
+            padding: 12px;
+        }
+        .video-title {
+            font-size: 14px;
+            color: #fff;
+            margin-bottom: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .video-meta {
+            font-size: 12px;
+            color: #888;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        @media (max-width: 768px) {
+            .nav-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>STREAMVAULT</h1>
+    </header>
+
+    <div class="container">
+        <!-- 分类导航网格 -->
+        <nav class="nav-grid" id="navGrid">
+            <!-- 动态渲染分类 -->
+        </nav>
+
+        <!-- 视频列表区块 -->
+        <section>
+            <div class="section-title">Latest Releases</div>
+            <div class="video-grid" id="videoGrid">
+                <!-- 动态渲染视频 -->
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // 采集分类英文列表（对应图片中所有分类）
+        const categories = [
+            "Featured Recommendations", "Anchor Beauties", "Censored Japanese", "Uncensored Japanese",
+            "Chinese Subtitles", "Babydoll Big Breasts", "Sexy Wives", "Taboo & Incest",
+            "Western Erotica", "Category III Ethics", "Anime & Cartoons", "Silk Stockings OL",
+            "Amateur & Voyeur", "Japanese Studios", "Plot-driven", "Leaked Series",
+            "LGBT / Homosexual", "Hookups & Escort", "Domestic Wives", "Domestic BDSM",
+            "Domestic Stockings", "Madou Media", "Domestic Incest", "Celebrity Face Swap",
+            "Master & Slave", "Humiliation Pleasure", "Gang Bang / Orgy", "Roleplay & Plot",
+            "HK & TW Babes", "Hardcore Fetish", "Transgender & Futanari", "VR Perspective"
+        ];
+
+        function renderNav() {
+            const navGrid = document.getElementById('navGrid');
+            navGrid.innerHTML = categories.map(cat => 
+                `<a href="#" class="nav-item" onclick="filterCategory('${cat}')" title="${cat}">${cat}</a>`
+            ).join('');
+        }
+
+        async function loadVideos() {
+            try {
+                const res = await fetch('data/list_1.json');
+                const videos = await res.json();
+                
+                const grid = document.getElementById('videoGrid');
+                grid.innerHTML = videos.slice(0, 24).map(v => `
+                    <a href="play.html?url=${encodeURIComponent(v.vod_play_url || '')}&title=${encodeURIComponent(v.vod_name)}" class="video-card">
+                        <img src="${v.vod_pic || 'https://via.placeholder.com/300x180?text=No+Image'}" class="video-thumb" alt="thumbnail" loading="lazy">
+                        <div class="video-info">
+                            <div class="video-title">${v.vod_name}</div>
+                            <div class="video-meta">
+                                <span>${v.vod_year || '2026'}</span>
+                                <span>HD</span>
+                            </div>
+                        </div>
+                    </a>
+                `).join('');
+            } catch (e) {
+                console.error("Failed to load videos:", e);
+                document.getElementById('videoGrid').innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 40px;">Please run update_data.py or wait for GitHub Actions to build data files.</div>';
+            }
+        }
+
+        function filterCategory(catName) {
+            event.preventDefault();
+            console.log("Filtering category:", catName);
+        }
+
+        renderNav();
+        loadVideos();
+    </script>
+</body>
+</html>
