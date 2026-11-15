@@ -11,127 +11,50 @@
         header h1 { color: #ff4757; font-size: 20px; letter-spacing: 1px; }
         .container { max-width: 1200px; margin: 10px auto; padding: 0 8px; }
         
-        /* 🎯 手机端核心方案：固定3行 + 横向丝滑滚动，不截断任何文字，也不占垂直空间 */
-        .nav-wrapper {
-            background: #181818;
-            padding: 8px;
-            border: 1px solid #2c2c2c;
-            border-radius: 6px;
-            margin-bottom: 14px;
-            position: relative;
-        }
+        /* 3行横向滑动导航 */
+        .nav-wrapper { background: #181818; padding: 8px; border: 1px solid #2c2c2c; border-radius: 6px; margin-bottom: 14px; }
         .nav-grid {
             display: grid;
-            grid-template-rows: repeat(3, 1fr); /* 严格固定 3 行 */
-            grid-auto-flow: column;             /* 按列自动横向排列 */
-            grid-auto-columns: max-content;     /* 宽度随文字自适应，绝不截断 */
+            grid-template-rows: repeat(3, 1fr);
+            grid-auto-flow: column;
+            grid-auto-columns: max-content;
             gap: 6px;
-            overflow-x: auto;                   /* 允许手指左右滑动 */
-            -webkit-overflow-scrolling: touch;  /* iOS/Android 惯性顺滑滚动 */
-            scrollbar-width: none;              /* Firefox 隐藏滚动条 */
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
         }
-        .nav-grid::-webkit-scrollbar {
-            display: none;                      /* Chrome/Safari 隐藏滚动条更美观 */
-        }
-
+        .nav-grid::-webkit-scrollbar { display: none; }
         .nav-item {
-            background: #242424;
-            padding: 6px 12px;
-            text-align: center;
-            color: #d0d0d0;
-            text-decoration: none;
-            font-size: 12px;
-            line-height: 1.2;
-            border-radius: 4px;
-            transition: all 0.15s ease;
-            border: 1px solid #303030;
-            white-space: nowrap;
+            background: #242424; padding: 6px 12px; text-align: center; color: #d0d0d0;
+            text-decoration: none; font-size: 12px; line-height: 1.2; border-radius: 4px;
+            border: 1px solid #303030; white-space: nowrap; transition: 0.15s;
         }
-        .nav-item:hover, .nav-item.active {
-            background: #ff4757;
-            color: #fff;
-            border-color: #ff6b81;
-            font-weight: bold;
-        }
+        .nav-item:hover, .nav-item.active { background: #ff4757; color: #fff; border-color: #ff6b81; font-weight: bold; }
 
-        .section-title {
-            margin-bottom: 10px;
-            font-size: 15px;
-            border-left: 3px solid #ff4757;
-            padding-left: 8px;
-            color: #fff;
-        }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .section-title { font-size: 15px; border-left: 3px solid #ff4757; padding-left: 8px; color: #fff; }
         
-        /* 视频列表网格 */
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-            gap: 8px;
-        }
-        .video-card {
-            background: #1e1e1e;
-            border-radius: 5px;
-            overflow: hidden;
-            border: 1px solid #2d2d2d;
-            transition: transform 0.2s;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-        .video-card:hover {
-            transform: translateY(-2px);
-            border-color: #555;
-        }
-        .video-thumb {
-            width: 100%;
-            height: 105px;
-            background: #2a2a2a;
-            object-fit: cover;
-        }
-        .video-info {
-            padding: 7px;
-        }
-        .video-title {
-            font-size: 12px;
-            color: #fff;
-            margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .video-meta {
-            font-size: 11px;
-            color: #888;
-            display: flex;
-            justify-content: space-between;
-        }
+        /* 视频网格 */
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 8px; }
+        .video-card { background: #1e1e1e; border-radius: 5px; overflow: hidden; border: 1px solid #2d2d2d; text-decoration: none; color: inherit; display: block; transition: transform 0.2s; }
+        .video-card:hover { transform: translateY(-2px); border-color: #555; }
+        .video-thumb { width: 100%; height: 105px; background: #2a2a2a; object-fit: cover; }
+        .video-info { padding: 7px; }
+        .video-title { font-size: 12px; color: #fff; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .video-meta { font-size: 11px; color: #888; display: flex; justify-content: space-between; }
 
-        /* 电脑端宽屏适配：自动切换为 11 列完整平铺 */
+        /* 分页控件样式 */
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 20px 0; }
+        .page-btn { background: #222; color: #ccc; border: 1px solid #444; padding: 6px 14px; font-size: 12px; border-radius: 4px; cursor: pointer; }
+        .page-btn:hover:not(:disabled) { background: #ff4757; color: #fff; border-color: #ff6b81; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .page-info { font-size: 12px; color: #888; }
+
         @media (min-width: 900px) {
-            .container { margin: 14px auto; padding: 0 15px; }
-            .nav-grid {
-                grid-template-rows: none;
-                grid-auto-flow: row;
-                grid-template-columns: repeat(11, 1fr);
-                overflow-x: visible;
-                gap: 6px;
-            }
-            .nav-item {
-                padding: 7px 4px;
-                font-size: 11px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            .video-grid {
-                grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-                gap: 14px;
-            }
-            .video-thumb {
-                height: 135px;
-            }
-            .video-title {
-                font-size: 13px;
-            }
+            .nav-grid { grid-template-rows: none; grid-auto-flow: row; grid-template-columns: repeat(10, 1fr); overflow-x: visible; }
+            .video-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
+            .video-thumb { height: 135px; }
+            .video-title { font-size: 13px; }
         }
     </style>
 </head>
@@ -142,126 +65,131 @@
     </header>
 
     <div class="container">
-        <!-- 手机端：3行横向顺滑滑动 | 电脑端：11列3行平铺 -->
         <div class="nav-wrapper">
             <nav class="nav-grid" id="navGrid"></nav>
         </div>
 
-        <!-- 视频列表区块 -->
         <section>
-            <div class="section-title" id="sectionTitle">🔥 Latest Releases</div>
+            <div class="section-header">
+                <div class="section-title" id="sectionTitle">🔥 Latest Releases</div>
+            </div>
             <div class="video-grid" id="videoGrid"></div>
+            <!-- 分页栏 -->
+            <div class="pagination" id="paginationBar" style="display: none;">
+                <button class="page-btn" id="prevBtn" onclick="changePage(-1)">Previous</button>
+                <span class="page-info" id="pageInfo">Page 1 / 1</span>
+                <button class="page-btn" id="nextBtn" onclick="changePage(1)">Next</button>
+            </div>
         </section>
     </div>
 
     <script>
-        const categories = [
-            "Featured", "Cam Girls", "JP Censored", "JP Uncensored",
-            "CN Subtitles", "Busty Petite", "Sexy Wives", "Taboo / Incest",
-            "Western", "Cat III", "Anime", "Stockings OL",
-            "Amateur", "JP Studios", "Plot", "Leaked",
-            "LGBT", "Escort", "CN Wives", "CN BDSM",
-            "CN Stockings", "Madou", "CN Taboo", "Deepfake",
-            "Dominance", "Humiliation", "Orgy", "Roleplay",
-            "HK & TW", "Hardcore", "Trans / Femboy", "VR"
-        ];
+        let currentVideos = [];
+        let currentPage = 1;
+        const pageSize = 24; // 每页显示 24 个视频
+        let currentFileOrData = '';
+        let isLatest = true;
 
-        function renderNav() {
+        async function initNav() {
             const navGrid = document.getElementById('navGrid');
-            let html = `<a href="#" class="nav-item active" onclick="loadVideos('cat_latest.json', '🔥 Latest Releases', this)">🔥 Latest</a>`;
-            html += categories.map(cat => 
-                `<a href="#" class="nav-item" onclick="filterCategory('${cat}', this)" title="${cat}">${cat}</a>`
-            ).join('');
-            navGrid.innerHTML = html;
+            try {
+                const res = await fetch('data/categories.json');
+                const catIndex = await res.json();
+                
+                let html = `<a href="#" class="nav-item active" onclick="loadCategory('cat_latest.json', '🔥 Latest Releases', true, this)">🔥 Latest</a>`;
+                html += catIndex.filter(c => c.name !== '🔥 Latest Releases').map(c => 
+                    `<a href="#" class="nav-item" onclick="loadCategory('${c.file || c.files}', '${c.name}', false, this)" title="${c.name}">${c.name} (${c.count})</a>`
+                ).join('');
+                navGrid.innerHTML = html;
+            } catch (e) {
+                console.error("加载导航失败", e);
+            }
         }
 
-        async function loadVideos(jsonFile, title, element) {
+        async function loadCategory(fileRef, title, latestFlag, element) {
             if (element) {
                 document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
                 element.classList.add('active');
             }
             document.getElementById('sectionTitle').innerText = title;
+            isLatest = latestFlag;
+            currentPage = 1;
+            
             const grid = document.getElementById('videoGrid');
             grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Loading...</div>';
+            document.getElementById('paginationBar').style.display = 'none';
 
             try {
-                const res = await fetch(`data/${jsonFile}`);
-                const videos = await res.json();
-                
-                if (videos.length === 0) {
-                    grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">No videos found.</div>';
-                    return;
-                }
-
-                grid.innerHTML = videos.map(v => `
-                    <a href="play.html?id=${v.id}" class="video-card">
-                        <img src="${v.pic || 'https://via.placeholder.com/300x180?text=No+Image'}" class="video-thumb" alt="thumbnail" loading="lazy">
-                        <div class="video-info">
-                            <div class="video-title">${v.title}</div>
-                            <div class="video-meta">
-                                <span>${v.year || '2026'}</span>
-                                <span>HD</span>
-                            </div>
-                        </div>
-                    </a>
-                `).join('');
-            } catch (e) {
-                console.error("Failed to load videos:", e);
-                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Please ensure data files are generated.</div>';
-            }
-        }
-
-        async function filterCategory(catName, element) {
-            event.preventDefault();
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            if (element) element.classList.add('active');
-            
-            document.getElementById('sectionTitle').innerText = catName;
-            const grid = document.getElementById('videoGrid');
-            grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Loading category...</div>';
-
-            try {
-                const res = await fetch('data/categories.json');
-                const catIndex = await res.json();
-                const matched = catIndex.find(c => c.name === catName);
-
-                if (!matched) {
-                    grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Category data not found.</div>';
-                    return;
-                }
-
                 let allVideos = [];
-                if (matched.file) {
-                    const r = await fetch(`data/${matched.file}`);
-                    allVideos = await r.json();
-                } else if (matched.files) {
-                    for (let fname of matched.files) {
-                        const r = await fetch(`data/${fname}`);
+                if (fileRef.includes(',')) {
+                    // 多分片文件合并
+                    const files = fileRef.split(',');
+                    for (let f of files) {
+                        const r = await fetch(`data/${f.trim()}`);
                         const chunk = await r.json();
                         allVideos = allVideos.concat(chunk);
                     }
+                } else {
+                    const r = await fetch(`data/${fileRef}`);
+                    allVideos = await r.json();
                 }
 
-                grid.innerHTML = allVideos.map(v => `
-                    <a href="play.html?id=${v.id}" class="video-card">
-                        <img src="${v.pic || 'https://via.placeholder.com/300x180?text=No+Image'}" class="video-thumb" alt="thumbnail" loading="lazy">
-                        <div class="video-info">
-                            <div class="video-title">${v.title}</div>
-                            <div class="video-meta">
-                                <span>${v.year || '2026'}</span>
-                                <span>HD</span>
-                            </div>
-                        </div>
-                    </a>
-                `).join('');
+                currentVideos = allVideos;
+                renderPage();
             } catch (e) {
-                console.error("Error loading category:", e);
-                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Failed to load category content.</div>';
+                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">No data available for this category yet.</div>';
             }
         }
 
-        renderNav();
-        loadVideos('cat_latest.json', '🔥 Latest Releases');
+        function renderPage() {
+            const grid = document.getElementById('videoGrid');
+            const paginationBar = document.getElementById('paginationBar');
+
+            if (currentVideos.length === 0) {
+                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">No videos found in this category.</div>';
+                paginationBar.style.display = 'none';
+                return;
+            }
+
+            const totalPages = Math.ceil(currentVideos.length / pageSize);
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageItems = currentVideos.slice(start, end);
+
+            grid.innerHTML = pageItems.map(v => `
+                <a href="play.html?id=${v.id}" class="video-card">
+                    <img src="${v.pic || 'https://via.placeholder.com/300x180?text=No+Image'}" class="video-thumb" alt="thumb" loading="lazy">
+                    <div class="video-info">
+                        <div class="video-title">${v.title}</div>
+                        <div class="video-meta">
+                            <span>${v.year || '2026'}</span>
+                            <span>HD</span>
+                        </div>
+                    </div>
+                </a>
+            `).join('');
+
+            if (totalPages > 1) {
+                paginationBar.style.display = 'flex';
+                document.getElementById('pageInfo').innerText = `Page ${currentPage} / ${totalPages} (Total ${currentVideos.length})`;
+                document.getElementById('prevBtn').disabled = (currentPage === 1);
+                document.getElementById('nextBtn').disabled = (currentPage === totalPages);
+            } else {
+                paginationBar.style.display = 'none';
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function changePage(direction) {
+            currentPage += direction;
+            renderPage();
+        }
+
+        initNav();
+        loadCategory('cat_latest.json', '🔥 Latest Releases', true);
     </script>
 </body>
 </html>
