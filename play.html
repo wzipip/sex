@@ -7,15 +7,15 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: #121212; color: #e0e0e0; font-family: Arial, sans-serif; }
-        header { background: #1f1f1f; padding: 15px 20px; display: flex; align-items: center; border-bottom: 2px solid #333; }
-        .back-btn { color: #ff4757; text-decoration: none; font-size: 14px; margin-right: 20px; white-space: nowrap; }
-        header h1 { color: #fff; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        header { background: #1f1f1f; padding: 12px 15px; display: flex; align-items: center; border-bottom: 1px solid #333; }
+        .back-btn { color: #ff4757; text-decoration: none; font-size: 14px; margin-right: 15px; white-space: nowrap; }
+        header h1 { color: #fff; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .container { max-width: 1000px; margin: 15px auto; padding: 0 10px; }
         
         .player-container {
             position: relative;
             width: 100%;
-            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            padding-top: 56.25%; /* 16:9 比例 */
             background: #000;
             border-radius: 6px;
             overflow: hidden;
@@ -27,32 +27,32 @@
             border: none;
         }
 
-        /* 选集列表区块 */
+        /* 选集列表 */
         .episodes-section {
-            margin-top: 20px;
+            margin-top: 15px;
             background: #1a1a1a;
-            padding: 15px;
+            padding: 12px;
             border-radius: 6px;
             border: 1px solid #333;
         }
         .episodes-title {
-            font-size: 14px;
+            font-size: 13px;
             color: #aaa;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-weight: bold;
         }
         .episodes-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            max-height: 150px;
+            gap: 6px;
+            max-height: 140px;
             overflow-y: auto;
         }
         .ep-btn {
             background: #222;
             color: #ccc;
             border: 1px solid #333;
-            padding: 8px 12px;
+            padding: 6px 10px;
             font-size: 12px;
             border-radius: 4px;
             cursor: pointer;
@@ -66,21 +66,21 @@
         }
 
         .video-details {
-            margin-top: 20px;
+            margin-top: 15px;
             background: #1a1a1a;
-            padding: 20px;
+            padding: 15px;
             border-radius: 6px;
             border: 1px solid #333;
         }
-        .video-details h2 { font-size: 20px; color: #fff; margin-bottom: 10px; }
-        .video-details p { color: #aaa; font-size: 14px; line-height: 1.5; margin-top: 8px; }
-        .meta-info { font-size: 12px; color: #888; margin-bottom: 10px; }
+        .video-details h2 { font-size: 18px; color: #fff; margin-bottom: 8px; }
+        .video-details p { color: #aaa; font-size: 13px; line-height: 1.4; margin-top: 6px; }
+        .meta-info { font-size: 11px; color: #888; margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
     <header>
-        <a href="index.html" class="back-btn">&#8592; Back Home</a>
+        <a href="index.html" class="back-btn">&#8592; Back</a>
         <h1 id="pageTitle">StreamVault Player</h1>
     </header>
 
@@ -108,8 +108,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         const videoId = urlParams.get('id');
 
-        // M3U8解析接口前缀
-        const PLAYER_PREFIX = "https://yutujx.com/?url=";
+        // 🎯 明确指定您要求的 M3U8 解析播放接口
+        const PLAYER_PREFIX = "https://yutujx.com/?url=";[span_2](start_span)[span_2](end_span)
 
         async function loadVideoDetail() {
             if (!videoId) {
@@ -118,7 +118,6 @@
             }
 
             try {
-                // 读取 vod_lookup.json 获取该 ID 对应的具体分片文件
                 const lookupRes = await fetch('data/vod_lookup.json');
                 const vodLookup = await lookupRes.json();
                 const dataFile = vodLookup[videoId];
@@ -128,7 +127,6 @@
                     return;
                 }
 
-                // 读取对应的分片数据
                 const chunkRes = await fetch(`data/${dataFile}`);
                 const chunkData = await chunkRes.json();
                 const video = chunkData.find(v => String(v.id) === String(videoId));
@@ -138,13 +136,11 @@
                     return;
                 }
 
-                // 填充页面基本信息
                 document.getElementById('videoTitle').innerText = video.title;
                 document.getElementById('pageTitle').innerText = video.title;
                 document.getElementById('videoMeta').innerText = `Category: ${video.category} | Year: ${video.year || 'N/A'} | Area: ${video.area || 'N/A'}`;
                 document.getElementById('videoDesc').innerText = video.content ? `Description: ${video.content}` : "No description available.";
 
-                // 渲染选集和播放
                 const episodes = video.episodes || [];
                 if (episodes.length > 0) {
                     const epSection = document.getElementById('episodesSection');
@@ -157,7 +153,6 @@
                         </button>
                     `).join('');
 
-                    // 默认播放第一集
                     playEpisode(episodes[0].url);
                 } else {
                     document.getElementById('playerFrame').srcdoc = '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100%;font-family:sans-serif;">No valid playback source found.</div>';
@@ -174,11 +169,10 @@
                 document.querySelectorAll('.ep-btn').forEach(btn => btn.classList.remove('active'));
                 buttonElement.classList.add('active');
             }
-            // 拼接解析接口并加载到 iframe
+            // 🎯 将资源站的视频真实播放地址拼接到解析接口后面
             document.getElementById('playerFrame').src = PLAYER_PREFIX + url;
         }
 
-        // 初始化加载
         loadVideoDetail();
     </script>
 </body>
