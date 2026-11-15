@@ -7,60 +7,70 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: #121212; color: #e0e0e0; font-family: Arial, sans-serif; }
-        header { background: #1f1f1f; padding: 10px 15px; text-align: center; border-bottom: 1px solid #333; }
-        header h1 { color: #ff4757; font-size: 18px; letter-spacing: 1px; }
-        .container { max-width: 1200px; margin: 8px auto; padding: 0 6px; }
+        header { background: #1f1f1f; padding: 12px 15px; text-align: center; border-bottom: 1px solid #333; }
+        header h1 { color: #ff4757; font-size: 20px; letter-spacing: 1px; }
+        .container { max-width: 1200px; margin: 10px auto; padding: 0 8px; }
         
-        /* 🎯 三行紧凑网格导航：11列布局（总计33个格子，完美铺满3行） */
+        /* 🎯 手机端核心方案：固定3行 + 横向丝滑滚动，不截断任何文字，也不占垂直空间 */
+        .nav-wrapper {
+            background: #181818;
+            padding: 8px;
+            border: 1px solid #2c2c2c;
+            border-radius: 6px;
+            margin-bottom: 14px;
+            position: relative;
+        }
         .nav-grid {
             display: grid;
-            grid-template-columns: repeat(11, 1fr);
-            gap: 3px;
-            background: #181818;
-            padding: 5px;
-            border: 1px solid #2c2c2c;
-            border-radius: 4px;
-            margin-bottom: 12px;
+            grid-template-rows: repeat(3, 1fr); /* 严格固定 3 行 */
+            grid-auto-flow: column;             /* 按列自动横向排列 */
+            grid-auto-columns: max-content;     /* 宽度随文字自适应，绝不截断 */
+            gap: 6px;
+            overflow-x: auto;                   /* 允许手指左右滑动 */
+            -webkit-overflow-scrolling: touch;  /* iOS/Android 惯性顺滑滚动 */
+            scrollbar-width: none;              /* Firefox 隐藏滚动条 */
+        }
+        .nav-grid::-webkit-scrollbar {
+            display: none;                      /* Chrome/Safari 隐藏滚动条更美观 */
         }
 
         .nav-item {
-            background: #222;
-            padding: 5px 2px;
+            background: #242424;
+            padding: 6px 12px;
             text-align: center;
-            color: #ccc;
+            color: #d0d0d0;
             text-decoration: none;
-            font-size: 10px;
-            line-height: 1.1;
-            border-radius: 2px;
+            font-size: 12px;
+            line-height: 1.2;
+            border-radius: 4px;
             transition: all 0.15s ease;
-            border: 1px solid #2a2a2a;
+            border: 1px solid #303030;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
         .nav-item:hover, .nav-item.active {
             background: #ff4757;
             color: #fff;
             border-color: #ff6b81;
+            font-weight: bold;
         }
 
         .section-title {
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 10px;
+            font-size: 15px;
             border-left: 3px solid #ff4757;
-            padding-left: 6px;
+            padding-left: 8px;
             color: #fff;
         }
         
         /* 视频列表网格 */
         .video-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
             gap: 8px;
         }
         .video-card {
             background: #1e1e1e;
-            border-radius: 4px;
+            border-radius: 5px;
             overflow: hidden;
             border: 1px solid #2d2d2d;
             transition: transform 0.2s;
@@ -74,49 +84,53 @@
         }
         .video-thumb {
             width: 100%;
-            height: 100px;
+            height: 105px;
             background: #2a2a2a;
             object-fit: cover;
         }
         .video-info {
-            padding: 6px;
+            padding: 7px;
         }
         .video-title {
-            font-size: 11px;
+            font-size: 12px;
             color: #fff;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         .video-meta {
-            font-size: 10px;
+            font-size: 11px;
             color: #888;
             display: flex;
             justify-content: space-between;
         }
 
-        /* 电脑端宽屏适配 */
-        @media (min-width: 768px) {
-            .container { margin: 12px auto; padding: 0 12px; }
+        /* 电脑端宽屏适配：自动切换为 11 列完整平铺 */
+        @media (min-width: 900px) {
+            .container { margin: 14px auto; padding: 0 15px; }
             .nav-grid {
-                padding: 8px;
-                gap: 5px;
-                margin-bottom: 16px;
+                grid-template-rows: none;
+                grid-auto-flow: row;
+                grid-template-columns: repeat(11, 1fr);
+                overflow-x: visible;
+                gap: 6px;
             }
             .nav-item {
+                padding: 7px 4px;
                 font-size: 11px;
-                padding: 6px 4px;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             .video-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                gap: 12px;
+                grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+                gap: 14px;
             }
             .video-thumb {
-                height: 130px;
+                height: 135px;
             }
             .video-title {
-                font-size: 12px;
+                font-size: 13px;
             }
         }
     </style>
@@ -128,8 +142,10 @@
     </header>
 
     <div class="container">
-        <!-- 🎯 11列布局，刚好铺满3行（1个Latest + 32个分类 = 33项） -->
-        <nav class="nav-grid" id="navGrid"></nav>
+        <!-- 手机端：3行横向顺滑滑动 | 电脑端：11列3行平铺 -->
+        <div class="nav-wrapper">
+            <nav class="nav-grid" id="navGrid"></nav>
+        </div>
 
         <!-- 视频列表区块 -->
         <section>
@@ -166,14 +182,14 @@
             }
             document.getElementById('sectionTitle').innerText = title;
             const grid = document.getElementById('videoGrid');
-            grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 20px;">Loading...</div>';
+            grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Loading...</div>';
 
             try {
                 const res = await fetch(`data/${jsonFile}`);
                 const videos = await res.json();
                 
                 if (videos.length === 0) {
-                    grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 20px;">No videos found.</div>';
+                    grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">No videos found.</div>';
                     return;
                 }
 
@@ -191,7 +207,7 @@
                 `).join('');
             } catch (e) {
                 console.error("Failed to load videos:", e);
-                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 20px;">Please ensure data files are generated.</div>';
+                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Please ensure data files are generated.</div>';
             }
         }
 
@@ -202,7 +218,7 @@
             
             document.getElementById('sectionTitle').innerText = catName;
             const grid = document.getElementById('videoGrid');
-            grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 20px;">Loading category...</div>';
+            grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Loading category...</div>';
 
             try {
                 const res = await fetch('data/categories.json');
@@ -210,7 +226,7 @@
                 const matched = catIndex.find(c => c.name === catName);
 
                 if (!matched) {
-                    grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 20px;">Category data not found.</div>';
+                    grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Category data not found.</div>';
                     return;
                 }
 
@@ -240,7 +256,7 @@
                 `).join('');
             } catch (e) {
                 console.error("Error loading category:", e);
-                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 20px;">Failed to load category content.</div>';
+                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Failed to load category content.</div>';
             }
         }
 
