@@ -318,7 +318,7 @@ def main():
   print(f"✅ 成功清理过期旧分片: {cleaned_count} 个")
 
   print("4. 生成 Sitemap 索引与分片...")
-  DOMAIN = "https://198616.xyz"  # 如果绑定了新域名，请在此处修改
+  DOMAIN = "https://x.ftp1.biz"  # 如果绑定了新域名，请在此处修改
   os.makedirs("sitemaps", exist_ok=True)
 
   base_sitemap_lines = [
