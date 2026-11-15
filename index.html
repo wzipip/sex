@@ -7,29 +7,20 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: #121212; color: #e0e0e0; font-family: Arial, sans-serif; }
-        header { background: #1f1f1f; padding: 12px 15px; text-align: center; border-bottom: 1px solid #333; }
-        header h1 { color: #ff4757; font-size: 20px; letter-spacing: 1px; }
-        .container { max-width: 1200px; margin: 10px auto; padding: 0 8px; }
+        header { background: #1f1f1f; padding: 10px 15px; text-align: center; border-bottom: 1px solid #333; }
+        header h1 { color: #ff4757; font-size: 18px; letter-spacing: 1px; }
+        .container { max-width: 1200px; margin: 8px auto; padding: 0 6px; }
         
-        /* 🎯 更加紧凑的 4 列分类导航网格 */
+        /* 🎯 三行紧凑网格导航：11列布局（总计33个格子，完美铺满3行） */
         .nav-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 4px;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 3px;
             background: #181818;
-            padding: 6px;
+            padding: 5px;
             border: 1px solid #2c2c2c;
             border-radius: 4px;
-            margin-bottom: 14px;
-            max-height: 135px; /* 手机端高度压得更紧凑，不占屏 */
-            overflow-y: auto;
-        }
-        .nav-grid::-webkit-scrollbar {
-            width: 3px;
-        }
-        .nav-grid::-webkit-scrollbar-thumb {
-            background: #444;
-            border-radius: 2px;
+            margin-bottom: 12px;
         }
 
         .nav-item {
@@ -38,9 +29,9 @@
             text-align: center;
             color: #ccc;
             text-decoration: none;
-            font-size: 11px;
-            line-height: 1.2;
-            border-radius: 3px;
+            font-size: 10px;
+            line-height: 1.1;
+            border-radius: 2px;
             transition: all 0.15s ease;
             border: 1px solid #2a2a2a;
             white-space: nowrap;
@@ -54,22 +45,22 @@
         }
 
         .section-title {
-            margin-bottom: 10px;
-            font-size: 15px;
+            margin-bottom: 8px;
+            font-size: 14px;
             border-left: 3px solid #ff4757;
-            padding-left: 8px;
+            padding-left: 6px;
             color: #fff;
         }
         
         /* 视频列表网格 */
         .video-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 8px;
         }
         .video-card {
             background: #1e1e1e;
-            border-radius: 5px;
+            border-radius: 4px;
             overflow: hidden;
             border: 1px solid #2d2d2d;
             transition: transform 0.2s;
@@ -83,51 +74,49 @@
         }
         .video-thumb {
             width: 100%;
-            height: 105px;
+            height: 100px;
             background: #2a2a2a;
             object-fit: cover;
         }
         .video-info {
-            padding: 7px;
+            padding: 6px;
         }
         .video-title {
-            font-size: 12px;
+            font-size: 11px;
             color: #fff;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         .video-meta {
-            font-size: 11px;
+            font-size: 10px;
             color: #888;
             display: flex;
             justify-content: space-between;
         }
 
-        /* 电脑端宽屏适配（同样保持紧凑美观） */
+        /* 电脑端宽屏适配 */
         @media (min-width: 768px) {
-            .container { margin: 16px auto; padding: 0 15px; }
+            .container { margin: 12px auto; padding: 0 12px; }
             .nav-grid {
-                max-height: none;
-                overflow-y: visible;
-                padding: 10px;
-                gap: 6px;
-                margin-bottom: 20px;
+                padding: 8px;
+                gap: 5px;
+                margin-bottom: 16px;
             }
             .nav-item {
-                font-size: 12px;
-                padding: 8px 6px;
+                font-size: 11px;
+                padding: 6px 4px;
             }
             .video-grid {
-                grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-                gap: 14px;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 12px;
             }
             .video-thumb {
-                height: 135px;
+                height: 130px;
             }
             .video-title {
-                font-size: 13px;
+                font-size: 12px;
             }
         }
     </style>
@@ -139,7 +128,7 @@
     </header>
 
     <div class="container">
-        <!-- 紧凑型 4 列分类导航网格 -->
+        <!-- 🎯 11列布局，刚好铺满3行（1个Latest + 32个分类 = 33项） -->
         <nav class="nav-grid" id="navGrid"></nav>
 
         <!-- 视频列表区块 -->
@@ -150,7 +139,6 @@
     </div>
 
     <script>
-        // 极简英文分类列表（1~2词，完美适配紧凑网格）
         const categories = [
             "Featured", "Cam Girls", "JP Censored", "JP Uncensored",
             "CN Subtitles", "Busty Petite", "Sexy Wives", "Taboo / Incest",
@@ -178,14 +166,14 @@
             }
             document.getElementById('sectionTitle').innerText = title;
             const grid = document.getElementById('videoGrid');
-            grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Loading...</div>';
+            grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 20px;">Loading...</div>';
 
             try {
                 const res = await fetch(`data/${jsonFile}`);
                 const videos = await res.json();
                 
                 if (videos.length === 0) {
-                    grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">No videos found in this category.</div>';
+                    grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 20px;">No videos found.</div>';
                     return;
                 }
 
@@ -203,7 +191,7 @@
                 `).join('');
             } catch (e) {
                 console.error("Failed to load videos:", e);
-                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Please ensure `update_data.py` has been executed to generate data files.</div>';
+                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 20px;">Please ensure data files are generated.</div>';
             }
         }
 
@@ -214,7 +202,7 @@
             
             document.getElementById('sectionTitle').innerText = catName;
             const grid = document.getElementById('videoGrid');
-            grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Loading category...</div>';
+            grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 20px;">Loading category...</div>';
 
             try {
                 const res = await fetch('data/categories.json');
@@ -222,7 +210,7 @@
                 const matched = catIndex.find(c => c.name === catName);
 
                 if (!matched) {
-                    grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Category data not found.</div>';
+                    grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 20px;">Category data not found.</div>';
                     return;
                 }
 
@@ -252,7 +240,7 @@
                 `).join('');
             } catch (e) {
                 console.error("Error loading category:", e);
-                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Failed to load category content.</div>';
+                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 20px;">Failed to load category content.</div>';
             }
         }
 
