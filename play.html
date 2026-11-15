@@ -8,13 +8,14 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: #121212; color: #e0e0e0; font-family: Arial, sans-serif; }
         header { background: #1f1f1f; padding: 15px 20px; display: flex; align-items: center; border-bottom: 2px solid #333; }
-        .back-btn { color: #ff4757; text-decoration: none; font-size: 14px; margin-right: 20px; }
+        .back-btn { color: #ff4757; text-decoration: none; font-size: 14px; margin-right: 20px; white-space: nowrap; }
         header h1 { color: #fff; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        
         .player-container {
             position: relative;
             width: 100%;
-            padding-top: 56.25%; /* 16:9比例 */
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
             background: #000;
             border-radius: 6px;
             overflow: hidden;
@@ -25,6 +26,45 @@
             top: 0; left: 0; width: 100%; height: 100%;
             border: none;
         }
+
+        /* 选集列表区块 */
+        .episodes-section {
+            margin-top: 20px;
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #333;
+        }
+        .episodes-title {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .episodes-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .ep-btn {
+            background: #222;
+            color: #ccc;
+            border: 1px solid #333;
+            padding: 8px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .ep-btn:hover, .ep-btn.active {
+            background: #ff4757;
+            color: #fff;
+            border-color: #ff6b81;
+        }
+
         .video-details {
             margin-top: 20px;
             background: #1a1a1a;
@@ -33,7 +73,8 @@
             border: 1px solid #333;
         }
         .video-details h2 { font-size: 20px; color: #fff; margin-bottom: 10px; }
-        .video-details p { color: #aaa; font-size: 14px; }
+        .video-details p { color: #aaa; font-size: 14px; line-height: 1.5; margin-top: 8px; }
+        .meta-info { font-size: 12px; color: #888; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -44,32 +85,101 @@
     </header>
 
     <div class="container">
+        <!-- 播放器视窗 -->
         <div class="player-container">
             <iframe id="playerFrame" allowfullscreen></iframe>
         </div>
+
+        <!-- 选集列表 -->
+        <div class="episodes-section" id="episodesSection" style="display: none;">
+            <div class="episodes-title">Episodes / Sources:</div>
+            <div class="episodes-grid" id="episodesGrid"></div>
+        </div>
+
+        <!-- 影片详情简介 -->
         <div class="video-details">
             <h2 id="videoTitle">Loading title...</h2>
-            <p>Playing via official high-speed M3U8 resolution stream.</p>
+            <div class="meta-info" id="videoMeta"></div>
+            <p id="videoDesc"></p>
         </div>
     </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const rawVideoUrl = urlParams.get('url');
-        const videoTitle = urlParams.get('title');
+        const videoId = urlParams.get('id');
 
-        if (videoTitle) {
-            document.getElementById('videoTitle').innerText = decodeURIComponent(videoTitle);
-            document.getElementById('pageTitle').innerText = decodeURIComponent(videoTitle);
+        // M3U8解析接口前缀
+        const PLAYER_PREFIX = "https://yutujx.com/?url=";
+
+        async function loadVideoDetail() {
+            if (!videoId) {
+                document.getElementById('videoTitle').innerText = "Error: No video ID provided.";
+                return;
+            }
+
+            try {
+                // 读取 vod_lookup.json 获取该 ID 对应的具体分片文件
+                const lookupRes = await fetch('data/vod_lookup.json');
+                const vodLookup = await lookupRes.json();
+                const dataFile = vodLookup[videoId];
+
+                if (!dataFile) {
+                    document.getElementById('videoTitle').innerText = "Video not found in local cache.";
+                    return;
+                }
+
+                // 读取对应的分片数据
+                const chunkRes = await fetch(`data/${dataFile}`);
+                const chunkData = await chunkRes.json();
+                const video = chunkData.find(v => String(v.id) === String(videoId));
+
+                if (!video) {
+                    document.getElementById('videoTitle').innerText = "Video details not found.";
+                    return;
+                }
+
+                // 填充页面基本信息
+                document.getElementById('videoTitle').innerText = video.title;
+                document.getElementById('pageTitle').innerText = video.title;
+                document.getElementById('videoMeta').innerText = `Category: ${video.category} | Year: ${video.year || 'N/A'} | Area: ${video.area || 'N/A'}`;
+                document.getElementById('videoDesc').innerText = video.content ? `Description: ${video.content}` : "No description available.";
+
+                // 渲染选集和播放
+                const episodes = video.episodes || [];
+                if (episodes.length > 0) {
+                    const epSection = document.getElementById('episodesSection');
+                    const epGrid = document.getElementById('episodesGrid');
+                    epSection.style.display = 'block';
+
+                    epGrid.innerHTML = episodes.map((ep, idx) => `
+                        <button class="ep-btn ${idx === 0 ? 'active' : ''}" onclick="playEpisode('${ep.url}', this)">
+                            ${ep.name || `Episode ${idx + 1}`}
+                        </button>
+                    `).join('');
+
+                    // 默认播放第一集
+                    playEpisode(episodes[0].url);
+                } else {
+                    document.getElementById('playerFrame').srcdoc = '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100%;font-family:sans-serif;">No valid playback source found.</div>';
+                }
+
+            } catch (e) {
+                console.error("Failed to load video details:", e);
+                document.getElementById('videoTitle').innerText = "Failed to load video data.";
+            }
         }
 
-        if (rawVideoUrl) {
-            // M3U8解析接口: https://yutujx.com/?url=
-            const playerPrefix = "https://yutujx.com/?url=";
-            document.getElementById('playerFrame').src = playerPrefix + rawVideoUrl;
-        } else {
-            document.getElementById('playerFrame').srcdoc = '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100%;font-family:sans-serif;">No video source provided.</div>';
+        function playEpisode(url, buttonElement) {
+            if (buttonElement) {
+                document.querySelectorAll('.ep-btn').forEach(btn => btn.classList.remove('active'));
+                buttonElement.classList.add('active');
+            }
+            // 拼接解析接口并加载到 iframe
+            document.getElementById('playerFrame').src = PLAYER_PREFIX + url;
         }
+
+        // 初始化加载
+        loadVideoDetail();
     </script>
 </body>
 </html>
