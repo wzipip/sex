@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamVault - Player</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #121212; color: #e0e0e0; font-family: Arial, sans-serif; }
+        header { background: #1f1f1f; padding: 15px 20px; display: flex; align-items: center; border-bottom: 2px solid #333; }
+        .back-btn { color: #ff4757; text-decoration: none; font-size: 14px; margin-right: 20px; }
+        header h1 { color: #fff; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        .player-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9比例 */
+            background: #000;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+        .player-container iframe {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border: none;
+        }
+        .video-details {
+            margin-top: 20px;
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid #333;
+        }
+        .video-details h2 { font-size: 20px; color: #fff; margin-bottom: 10px; }
+        .video-details p { color: #aaa; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn">&#8592; Back Home</a>
+        <h1 id="pageTitle">StreamVault Player</h1>
+    </header>
+
+    <div class="container">
+        <div class="player-container">
+            <iframe id="playerFrame" allowfullscreen></iframe>
+        </div>
+        <div class="video-details">
+            <h2 id="videoTitle">Loading title...</h2>
+            <p>Playing via official high-speed M3U8 resolution stream.</p>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const rawVideoUrl = urlParams.get('url');
+        const videoTitle = urlParams.get('title');
+
+        if (videoTitle) {
+            document.getElementById('videoTitle').innerText = decodeURIComponent(videoTitle);
+            document.getElementById('pageTitle').innerText = decodeURIComponent(videoTitle);
+        }
+
+        if (rawVideoUrl) {
+            // M3U8解析接口: https://yutujx.com/?url=
+            const playerPrefix = "https://yutujx.com/?url=";
+            document.getElementById('playerFrame').src = playerPrefix + rawVideoUrl;
+        } else {
+            document.getElementById('playerFrame').srcdoc = '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100%;font-family:sans-serif;">No video source provided.</div>';
+        }
+    </script>
+</body>
+</html>
