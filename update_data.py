@@ -8,8 +8,8 @@ import urllib.parse
 import urllib.request
 
 # 🎯 已彻底更新为新采集源接口
-BASE_URL = "http://api.wujinwszy.net/api.php/provide/vod/?ac=detail"
-LIST_URL = "http://api.wujinwszy.net/api.php/provide/vod/?ac=list"
+BASE_URL = "https://apiyutu.com/api.php/providedao/vod/?ac=detail"
+LIST_URL = "https://apiyutu.com/api.php/providedao/vod/?ac=list"
 
 MAX_WORKERS = 3
 CHUNK_SIZE = 100  # 严格控制分片大小
