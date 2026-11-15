@@ -11,7 +11,7 @@ import urllib.request
 BASE_URL = "https://apiyutu.com/api.php/providedao/vod/?ac=detail"
 LIST_URL = "https://apiyutu.com/api.php/providedao/vod/?ac=list"
 
-MAX_WORKERS = 3
+MAX_WORKERS = 10
 CHUNK_SIZE = 100  # 严格控制分片大小
 
 # 中文采集分类到极简英文分类的严格映射
