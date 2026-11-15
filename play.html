@@ -108,8 +108,14 @@
         const urlParams = new URLSearchParams(window.location.search);
         const videoId = urlParams.get('id');
 
-        // 🎯 明确指定您要求的 M3U8 解析播放接口
-        const PLAYER_PREFIX = "https://yutujx.com/?url=";[span_2](start_span)[span_2](end_span)
+        // M3U8 解析播放接口
+        const PLAYER_PREFIX = "https://yutujx.com/?url=";[span_0](start_span)[span_0](end_span)
+
+        // 🎯 过滤 HTML 标签（如 <p>, </p>, <br> 等）的工具函数
+        function cleanHtmlTags(str) {
+            if (!str) return "No description available.";
+            return str.replace(/<[^>]+>/g, '').trim();
+        }
 
         async function loadVideoDetail() {
             if (!videoId) {
@@ -139,7 +145,11 @@
                 document.getElementById('videoTitle').innerText = video.title;
                 document.getElementById('pageTitle').innerText = video.title;
                 document.getElementById('videoMeta').innerText = `Category: ${video.category} | Year: ${video.year || 'N/A'} | Area: ${video.area || 'N/A'}`;
-                document.getElementById('videoDesc').innerText = video.content ? `Description: ${video.content}` : "No description available.";
+                
+                // 🎯 使用清理函数过滤掉简介中的 <p> 等标签
+                const rawDesc = video.content || "";
+                const cleanDesc = cleanHtmlTags(rawDesc);
+                document.getElementById('videoDesc').innerText = cleanDesc ? `Description: ${cleanDesc}` : "No description available.";
 
                 const episodes = video.episodes || [];
                 if (episodes.length > 0) {
@@ -169,7 +179,6 @@
                 document.querySelectorAll('.ep-btn').forEach(btn => btn.classList.remove('active'));
                 buttonElement.classList.add('active');
             }
-            // 🎯 将资源站的视频真实播放地址拼接到解析接口后面
             document.getElementById('playerFrame').src = PLAYER_PREFIX + url;
         }
 
