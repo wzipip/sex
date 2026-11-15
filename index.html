@@ -7,26 +7,25 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: #121212; color: #e0e0e0; font-family: Arial, sans-serif; }
-        header { background: #1f1f1f; padding: 15px 20px; text-align: center; border-bottom: 2px solid #333; }
-        header h1 { color: #ff4757; font-size: 22px; letter-spacing: 1px; }
-        .container { max-width: 1200px; margin: 15px auto; padding: 0 10px; }
+        header { background: #1f1f1f; padding: 12px 15px; text-align: center; border-bottom: 1px solid #333; }
+        header h1 { color: #ff4757; font-size: 20px; letter-spacing: 1px; }
+        .container { max-width: 1200px; margin: 10px auto; padding: 0 8px; }
         
-        /* 🎯 关键修改：手机端和电脑端同样保持 4 列网格，并限制最大高度可滚动，避免占用过多屏幕空间 */
+        /* 🎯 更加紧凑的 4 列分类导航网格 */
         .nav-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
+            gap: 4px;
             background: #181818;
-            padding: 10px;
-            border: 1px solid #333;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            max-height: 180px; /* 限制高度，防止占据太多屏幕 */
-            overflow-y: auto;  /* 内容过多时内部滚动 */
+            padding: 6px;
+            border: 1px solid #2c2c2c;
+            border-radius: 4px;
+            margin-bottom: 14px;
+            max-height: 135px; /* 手机端高度压得更紧凑，不占屏 */
+            overflow-y: auto;
         }
-        /* 美化滚动条 */
         .nav-grid::-webkit-scrollbar {
-            width: 4px;
+            width: 3px;
         }
         .nav-grid::-webkit-scrollbar-thumb {
             background: #444;
@@ -35,14 +34,15 @@
 
         .nav-item {
             background: #222;
-            padding: 8px 4px;
+            padding: 5px 2px;
             text-align: center;
             color: #ccc;
             text-decoration: none;
-            font-size: 11px; /* 适应小屏幕紧凑字体 */
-            border-radius: 4px;
-            transition: all 0.2s ease;
-            border: 1px solid #2c2c2c;
+            font-size: 11px;
+            line-height: 1.2;
+            border-radius: 3px;
+            transition: all 0.15s ease;
+            border: 1px solid #2a2a2a;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -54,24 +54,24 @@
         }
 
         .section-title {
-            margin-bottom: 12px;
-            font-size: 16px;
-            border-left: 4px solid #ff4757;
+            margin-bottom: 10px;
+            font-size: 15px;
+            border-left: 3px solid #ff4757;
             padding-left: 8px;
             color: #fff;
         }
         
-        /* 视频列表网格：手机端自适应两列或多列 */
+        /* 视频列表网格 */
         .video-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+            gap: 8px;
         }
         .video-card {
             background: #1e1e1e;
-            border-radius: 6px;
+            border-radius: 5px;
             overflow: hidden;
-            border: 1px solid #333;
+            border: 1px solid #2d2d2d;
             transition: transform 0.2s;
             text-decoration: none;
             color: inherit;
@@ -83,12 +83,12 @@
         }
         .video-thumb {
             width: 100%;
-            height: 110px;
+            height: 105px;
             background: #2a2a2a;
             object-fit: cover;
         }
         .video-info {
-            padding: 8px;
+            padding: 7px;
         }
         .video-title {
             font-size: 12px;
@@ -105,26 +105,29 @@
             justify-content: space-between;
         }
 
+        /* 电脑端宽屏适配（同样保持紧凑美观） */
         @media (min-width: 768px) {
-            .video-grid {
-                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-                gap: 15px;
-            }
-            .video-thumb {
-                height: 140px;
-            }
-            .video-title {
-                font-size: 14px;
-            }
+            .container { margin: 16px auto; padding: 0 15px; }
             .nav-grid {
-                max-height: none; /* 电脑端展示全部高度不滚动 */
+                max-height: none;
                 overflow-y: visible;
-                padding: 15px;
-                gap: 10px;
+                padding: 10px;
+                gap: 6px;
+                margin-bottom: 20px;
             }
             .nav-item {
+                font-size: 12px;
+                padding: 8px 6px;
+            }
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+                gap: 14px;
+            }
+            .video-thumb {
+                height: 135px;
+            }
+            .video-title {
                 font-size: 13px;
-                padding: 12px 10px;
             }
         }
     </style>
@@ -136,36 +139,31 @@
     </header>
 
     <div class="container">
-        <!-- 4列紧凑分类导航网格（手机端限制高度带滚动条，电脑端完整展示） -->
-        <nav class="nav-grid" id="navGrid">
-            <!-- 动态渲染分类 -->
-        </nav>
+        <!-- 紧凑型 4 列分类导航网格 -->
+        <nav class="nav-grid" id="navGrid"></nav>
 
         <!-- 视频列表区块 -->
         <section>
             <div class="section-title" id="sectionTitle">🔥 Latest Releases</div>
-            <div class="video-grid" id="videoGrid">
-                <!-- 动态渲染视频 -->
-            </div>
+            <div class="video-grid" id="videoGrid"></div>
         </section>
     </div>
 
     <script>
-        // 英文分类列表（对应 32 个细分板块）
+        // 极简英文分类列表（1~2词，完美适配紧凑网格）
         const categories = [
-            "Featured Recommendations", "Anchor Beauties", "Censored Japanese", "Uncensored Japanese",
-            "Chinese Subtitles", "Babydoll Big Breasts", "Sexy Wives", "Taboo & Incest",
-            "Western Erotica", "Category III Ethics", "Anime & Cartoons", "Silk Stockings OL",
-            "Amateur & Voyeur", "Japanese Studios", "Plot-driven", "Leaked Series",
-            "LGBT / Homosexual", "Hookups & Escort", "Domestic Wives", "Domestic BDSM",
-            "Domestic Stockings", "Madou Media", "Domestic Incest", "Celebrity Face Swap",
-            "Master & Slave", "Humiliation Pleasure", "Gang Bang / Orgy", "Roleplay & Plot",
-            "HK & TW Babes", "Hardcore Fetish", "Transgender & Futanari", "VR Perspective"
+            "Featured", "Cam Girls", "JP Censored", "JP Uncensored",
+            "CN Subtitles", "Busty Petite", "Sexy Wives", "Taboo / Incest",
+            "Western", "Cat III", "Anime", "Stockings OL",
+            "Amateur", "JP Studios", "Plot", "Leaked",
+            "LGBT", "Escort", "CN Wives", "CN BDSM",
+            "CN Stockings", "Madou", "CN Taboo", "Deepfake",
+            "Dominance", "Humiliation", "Orgy", "Roleplay",
+            "HK & TW", "Hardcore", "Trans / Femboy", "VR"
         ];
 
         function renderNav() {
             const navGrid = document.getElementById('navGrid');
-            // 增加一个“Latest Releases”入口以及全部分类
             let html = `<a href="#" class="nav-item active" onclick="loadVideos('cat_latest.json', '🔥 Latest Releases', this)">🔥 Latest</a>`;
             html += categories.map(cat => 
                 `<a href="#" class="nav-item" onclick="filterCategory('${cat}', this)" title="${cat}">${cat}</a>`
@@ -258,7 +256,6 @@
             }
         }
 
-        // 初始化加载
         renderNav();
         loadVideos('cat_latest.json', '🔥 Latest Releases');
     </script>
