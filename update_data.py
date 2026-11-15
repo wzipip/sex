@@ -12,52 +12,52 @@ LIST_URL = "http://api.wujinwszy.net/api.php/provide/vod/?ac=list"
 MAX_WORKERS = 3
 CHUNK_SIZE = 100  # 🎯 严格控制分片大小
 
-# 🎯 中文采集分类到前端英文分类的严格映射（对应图片导航样式）
+# 🎯 中文采集分类到极简英文分类的严格映射
 CATEGORY_MAP_EN = {
-    "精品推荐": "Featured Recommendations",
-    "主播秀色": "Anchor Beauties",
-    "日本有码": "Censored Japanese",
-    "日本无码": "Uncensored Japanese",
-    "中文字幕": "Chinese Subtitles",
-    "童颜巨乳": "Babydoll Big Breasts",
+    "精品推荐": "Featured",
+    "主播秀色": "Cam Girls",
+    "日本有码": "JP Censored",
+    "日本无码": "JP Uncensored",
+    "中文字幕": "CN Subtitles",
+    "童颜巨乳": "Busty Petite",
     "性感人妻": "Sexy Wives",
-    "强奸乱伦": "Taboo & Incest",
-    "欧美情色": "Western Erotica",
-    "三级伦理": "Category III Ethics",
-    "卡通动漫": "Anime & Cartoons",
-    "丝袜OL": "Silk Stockings OL",
-    "自拍偷拍": "Amateur & Voyeur",
-    "日本片商": "Japanese Studios",
-    "剧情介绍": "Plot-driven",
-    "网曝系列": "Leaked Series",
-    "同性恋": "LGBT / Homosexual",
-    "探花嫖娼": "Hookups & Escort",
-    "国产人妻": "Domestic Wives",
-    "国产SM": "Domestic BDSM",
-    "国产丝袜": "Domestic Stockings",
-    "麻豆传媒": "Madou Media",
-    "国产乱伦": "Domestic Incest",
-    "明星换脸": "Celebrity Face Swap",
-    "主奴调教": "Master & Slave",
-    "凌辱快感": "Humiliation Pleasure",
-    "多人群交": "Gang Bang / Orgy",
-    "角色剧情": "Roleplay & Plot",
-    "港台辣妹": "HK & TW Babes",
-    "重口性癖": "Hardcore Fetish",
-    "变性伪娘": "Transgender & Futanari",
-    "VR视角": "VR Perspective",
+    "强奸乱伦": "Taboo / Incest",
+    "欧美情色": "Western",
+    "三级伦理": "Cat III",
+    "卡通动漫": "Anime",
+    "丝袜OL": "Stockings OL",
+    "自拍偷拍": "Amateur",
+    "日本片商": "JP Studios",
+    "剧情介绍": "Plot",
+    "网曝系列": "Leaked",
+    "同性恋": "LGBT",
+    "探花嫖娼": "Escort",
+    "国产人妻": "CN Wives",
+    "国产SM": "CN BDSM",
+    "国产丝袜": "CN Stockings",
+    "麻豆传媒": "Madou",
+    "国产乱伦": "CN Taboo",
+    "明星换脸": "Deepfake",
+    "主奴调教": "Dominance",
+    "凌辱快感": "Humiliation",
+    "多人群交": "Orgy",
+    "角色剧情": "Roleplay",
+    "港台辣妹": "HK & TW",
+    "重口性癖": "Hardcore",
+    "变性伪娘": "Trans / Femboy",
+    "VR视角": "VR",
 }
 
-# 预定义的标准英文分类顺序（完美对齐图片排版）
+# 预定义的极简英文分类顺序
 ORDERED_ENGLISH_CATEGORIES = [
-    "Featured Recommendations", "Anchor Beauties", "Censored Japanese", "Uncensored Japanese",
-    "Chinese Subtitles", "Babydoll Big Breasts", "Sexy Wives", "Taboo & Incest",
-    "Western Erotica", "Category III Ethics", "Anime & Cartoons", "Silk Stockings OL",
-    "Amateur & Voyeur", "Japanese Studios", "Plot-driven", "Leaked Series",
-    "LGBT / Homosexual", "Hookups & Escort", "Domestic Wives", "Domestic BDSM",
-    "Domestic Stockings", "Madou Media", "Domestic Incest", "Celebrity Face Swap",
-    "Master & Slave", "Humiliation Pleasure", "Gang Bang / Orgy", "Roleplay & Plot",
-    "HK & TW Babes", "Hardcore Fetish", "Transgender & Futanari", "VR Perspective"
+    "Featured", "Cam Girls", "JP Censored", "JP Uncensored",
+    "CN Subtitles", "Busty Petite", "Sexy Wives", "Taboo / Incest",
+    "Western", "Cat III", "Anime", "Stockings OL",
+    "Amateur", "JP Studios", "Plot", "Leaked",
+    "LGBT", "Escort", "CN Wives", "CN BDSM",
+    "CN Stockings", "Madou", "CN Taboo", "Deepfake",
+    "Dominance", "Humiliation", "Orgy", "Roleplay",
+    "HK & TW", "Hardcore", "Trans / Femboy", "VR"
 ]
 
 
@@ -170,7 +170,7 @@ def main():
     if not raw_category and type_id in category_map:
       raw_category = category_map[type_id]
     
-    # 转换为对应的英文分类名称，如果不在映射内则保持原样或归为 Uncategorized
+    # 转换为极简英文分类名称
     category = CATEGORY_MAP_EN.get(raw_category, raw_category if raw_category else "Uncategorized")
 
     pic = vod.get("vod_pic", "")
@@ -208,10 +208,7 @@ def main():
     existing_videos_map[vod_id] = item
 
   all_videos = list(existing_videos_map.values())
-  
-  # 🎯 核心：合并后强制按 ID 降序排序（最新发布的影片排在最前）
   all_videos.sort(key=lambda x: int(x.get("id", 0)), reverse=True)
-  
   print(f"合并并排序后总影视库数据: {len(all_videos)} 条")
 
   processed_videos = all_videos
@@ -226,7 +223,6 @@ def main():
 
   cat_index = []
 
-  # 最新更新前 100 条
   latest_items = processed_videos[:100]
   with open(os.path.join("data", "cat_latest.json"), "w", encoding="utf-8") as f:
     json.dump(latest_items, f, ensure_ascii=False, indent=2)
@@ -279,7 +275,6 @@ def main():
   with open("data/categories.json", "w", encoding="utf-8") as f:
     json.dump(cat_index, f, ensure_ascii=False, indent=2)
 
-  # 搜索索引
   search_index = []
   for vod in processed_videos:
     search_index.append({
@@ -296,13 +291,11 @@ def main():
   ) as f:
     json.dump(search_index, f, ensure_ascii=False)
 
-  # 播放页专用轻量索引
   with open(
       os.path.join("data", "vod_lookup.json"), "w", encoding="utf-8"
   ) as f:
     json.dump(vod_file_map, f, ensure_ascii=False, separators=(",", ":"))
 
-  # 自动清理过期旧分片
   print("3. 正在清理过期的旧分片文件...")
   active_files = set()
   for cat in cat_index:
@@ -324,9 +317,8 @@ def main():
         pass
   print(f"✅ 成功清理过期旧分片: {cleaned_count} 个")
 
-  # 生成 Sitemap 索引与分片
   print("4. 生成 Sitemap 索引与分片...")
-  DOMAIN = "https://"
+  DOMAIN = "https://wzipip.github.io/sex"
   os.makedirs("sitemaps", exist_ok=True)
 
   base_sitemap_lines = [
