@@ -7,12 +7,14 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+# 🎯 已彻底更新为新采集源接口
 BASE_URL = "http://api.wujinwszy.net/api.php/provide/vod/?ac=detail"
 LIST_URL = "http://api.wujinwszy.net/api.php/provide/vod/?ac=list"
-MAX_WORKERS = 3
-CHUNK_SIZE = 100  # 🎯 严格控制分片大小
 
-# 🎯 中文采集分类到极简英文分类的严格映射
+MAX_WORKERS = 3
+CHUNK_SIZE = 100  # 严格控制分片大小
+
+# 中文采集分类到极简英文分类的严格映射
 CATEGORY_MAP_EN = {
     "精品推荐": "Featured",
     "主播秀色": "Cam Girls",
@@ -48,7 +50,6 @@ CATEGORY_MAP_EN = {
     "VR视角": "VR",
 }
 
-# 预定义的极简英文分类顺序
 ORDERED_ENGLISH_CATEGORIES = [
     "Featured", "Cam Girls", "JP Censored", "JP Uncensored",
     "CN Subtitles", "Busty Petite", "Sexy Wives", "Taboo / Incest",
@@ -170,7 +171,6 @@ def main():
     if not raw_category and type_id in category_map:
       raw_category = category_map[type_id]
     
-    # 转换为极简英文分类名称
     category = CATEGORY_MAP_EN.get(raw_category, raw_category if raw_category else "Uncategorized")
 
     pic = vod.get("vod_pic", "")
@@ -318,7 +318,7 @@ def main():
   print(f"✅ 成功清理过期旧分片: {cleaned_count} 个")
 
   print("4. 生成 Sitemap 索引与分片...")
-  DOMAIN = "https://wzipip.github.io/sex"
+  DOMAIN = "https://198616.xyz"  # 如果绑定了新域名，请在此处修改
   os.makedirs("sitemaps", exist_ok=True)
 
   base_sitemap_lines = [
