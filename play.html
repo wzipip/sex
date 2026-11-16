@@ -17,14 +17,14 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: var(--bg-main); color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
-        /* 与首页完全统一的吸顶头部 */
+        /* 现代吸顶头部 */
         .site-header {
             position: sticky; top: 0; z-index: 100;
             background: rgba(20, 21, 26, 0.88);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-color);
-            padding: 12px 16px;
+            padding: 10px 16px;
         }
         .header-inner {
             max-width: 1240px; margin: 0 auto;
@@ -32,78 +32,83 @@
         }
         .brand {
             display: flex; align-items: center; gap: 8px;
-            text-decoration: none; color: #fff; font-size: 19px; font-weight: 800; letter-spacing: 0.5px;
+            text-decoration: none; color: #fff; font-size: 18px; font-weight: 800; letter-spacing: 0.5px;
         }
         .brand-dot {
-            width: 10px; height: 10px; border-radius: 50%;
-            background: var(--accent); box-shadow: 0 0 10px var(--accent);
+            width: 9px; height: 9px; border-radius: 50%;
+            background: var(--accent); box-shadow: 0 0 8px var(--accent);
         }
         .back-home {
             color: #d0d4de; text-decoration: none; font-size: 12px; font-weight: 600;
-            background: #22252e; padding: 6px 12px; border-radius: 6px;
-            border: 1px solid var(--border-color); transition: 0.18s;
+            background: #22252e; padding: 5px 12px; border-radius: 6px;
+            border: 1px solid var(--border-color); transition: 0.15s;
         }
         .back-home:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-        .container { max-width: 1100px; margin: 14px auto; padding: 0 12px; }
+        .container { max-width: 1100px; margin: 12px auto; padding: 0 10px; }
 
-        /* 与首页完全一致的整齐网格导航 */
+        /* 紧凑整齐的分类导航（与首页完全一致） */
         .nav-panel {
             background: var(--bg-nav); border: 1px solid var(--border-color);
-            border-radius: 10px; padding: 10px; margin-bottom: 16px;
+            border-radius: 8px; padding: 8px; margin-bottom: 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
         }
         .nav-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
-            gap: 6px;
+            grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+            gap: 4px;
+            align-content: start;
         }
         .nav-item {
             display: flex; align-items: center; justify-content: center;
             background: #1e2028; color: #c8ccd6;
-            text-decoration: none; font-size: 12px; font-weight: 500;
-            padding: 7px 6px; border-radius: 6px;
+            text-decoration: none; font-size: 11px; font-weight: 500;
+            padding: 6px 4px; border-radius: 4px;
+            border: 1px solid transparent;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            transition: all 0.18s ease;
+            transition: all 0.15s ease;
         }
-        .nav-item:hover { background: var(--accent); color: #fff; font-weight: 600; }
+        .nav-item:hover {
+            background: #282b36; color: #fff; border-color: rgba(255,255,255,0.12);
+        }
 
         /* 播放器容器 */
         .player-box {
             position: relative; width: 100%; padding-top: 56.25%;
-            background: #000; border-radius: 10px; overflow: hidden;
-            border: 1px solid var(--border-color); box-shadow: 0 8px 30px rgba(0,0,0,0.45);
+            background: #000; border-radius: 8px; overflow: hidden;
+            border: 1px solid var(--border-color); box-shadow: 0 6px 24px rgba(0,0,0,0.4);
         }
         .player-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
         /* 选集面板 */
         .episodes-card {
-            margin-top: 16px; background: var(--bg-card); padding: 14px;
-            border-radius: 10px; border: 1px solid var(--border-color);
+            margin-top: 14px; background: var(--bg-card); padding: 12px;
+            border-radius: 8px; border: 1px solid var(--border-color);
         }
-        .card-label { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 10px; }
-        .episodes-grid { display: flex; flex-wrap: wrap; gap: 8px; max-height: 160px; overflow-y: auto; }
+        .card-label { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .episodes-grid { display: flex; flex-wrap: wrap; gap: 6px; max-height: 150px; overflow-y: auto; }
         .ep-btn {
             background: #22252e; color: #ccc; border: 1px solid var(--border-color);
-            padding: 6px 12px; font-size: 12px; border-radius: 6px; cursor: pointer; transition: 0.15s;
+            padding: 5px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; transition: 0.15s;
         }
         .ep-btn:hover, .ep-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
 
         /* 影片详情卡片 */
         .detail-card {
-            margin-top: 16px; margin-bottom: 30px; background: var(--bg-card);
-            padding: 16px; border-radius: 10px; border: 1px solid var(--border-color);
+            margin-top: 14px; margin-bottom: 24px; background: var(--bg-card);
+            padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);
         }
-        .detail-card h1 { font-size: 18px; color: #fff; margin-bottom: 8px; }
-        .meta-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .detail-card h1 { font-size: 16px; color: #fff; margin-bottom: 6px; }
+        .meta-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
         .tag {
-            background: #22252e; color: var(--text-muted); font-size: 11px;
-            padding: 3px 8px; border-radius: 4px;
+            background: #22252e; color: var(--text-muted); font-size: 10px;
+            padding: 2px 6px; border-radius: 3px;
         }
-        .desc-text { color: #b0b4c0; font-size: 13px; line-height: 1.6; }
+        .desc-text { color: #b0b4c0; font-size: 12px; line-height: 1.5; }
 
         @media (min-width: 768px) {
-            .nav-grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 8px; }
-            .nav-item { font-size: 13px; padding: 8px 10px; }
+            .nav-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; }
+            .nav-item { font-size: 12px; padding: 7px 6px; }
         }
     </style>
 </head>
@@ -120,7 +125,7 @@
     </header>
 
     <div class="container">
-        <!-- 播放页同步导航：点击任意分类直接跳转到首页对应分类 -->
+        <!-- 导航面板 -->
         <div class="nav-panel">
             <nav class="nav-grid" id="navGrid"></nav>
         </div>
@@ -135,7 +140,7 @@
         </div>
 
         <div class="detail-card">
-            <h1 id="videoTitle">正在加载影片信息...</h1>
+            <h1 id="videoTitle">正在加载影片...</h1>
             <div class="meta-tags" id="videoMeta"></div>
             <p class="desc-text" id="videoDesc"></p>
         </div>
@@ -146,12 +151,11 @@
         const videoId = urlParams.get('id');
         const PLAYER_PREFIX = "https://yutujx.com/?url=";
 
-        async function initPlayerNav() {
-            const navGrid = document.getElementById('navGrid');
+        async function initPlayer() {
+            // 1. 异步加载顶部紧凑导航
             try {
                 const res = await fetch('data/categories.json');
                 const catIndex = await res.json();
-                
                 const validCats = catIndex.filter(c => 
                     c.name !== '🔥 Latest Releases' && 
                     c.name !== 'Uncategorized' && 
@@ -162,18 +166,12 @@
                 html += validCats.map(c => 
                     `<a href="index.html?cat=${encodeURIComponent(c.name)}" class="nav-item" title="${c.name}">${c.name}</a>`
                 ).join('');
-                navGrid.innerHTML = html;
+                document.getElementById('navGrid').innerHTML = html;
             } catch (e) {
                 console.error("加载导航失败", e);
             }
-        }
 
-        function cleanHtmlTags(str) {
-            if (!str) return "暂无简介";
-            return str.replace(/<[^>]+>/g, '').trim() || "暂无简介";
-        }
-
-        async function loadVideoDetail() {
+            // 2. 按需精准加载当前视频详情（通过 vod_lookup 索引直接找对应分片）
             if (!videoId) {
                 document.getElementById('videoTitle').innerText = "错误：未指定影片 ID";
                 return;
@@ -198,6 +196,7 @@
                     return;
                 }
 
+                // 3. 渲染详情与播放器
                 document.getElementById('videoTitle').innerText = video.title;
                 document.title = `${video.title} - StreamVault`;
                 document.getElementById('videoMeta').innerHTML = `
@@ -221,13 +220,18 @@
 
                     playEpisode(episodes[0].url);
                 } else {
-                    document.getElementById('playerFrame').srcdoc = '<div style="color:#888;display:flex;align-items:center;justify-content:center;height:100%;font-family:sans-serif;font-size:14px;">暂无有效播放源</div>';
+                    document.getElementById('playerFrame').srcdoc = '<div style="color:#888;display:flex;align-items:center;justify-content:center;height:100%;font-family:sans-serif;font-size:13px;">暂无有效播放源</div>';
                 }
 
             } catch (e) {
                 console.error("加载播放页失败:", e);
                 document.getElementById('videoTitle').innerText = "加载影片数据时发生错误。";
             }
+        }
+
+        function cleanHtmlTags(str) {
+            if (!str) return "暂无简介";
+            return str.replace(/<[^>]+>/g, '').trim() || "暂无简介";
         }
 
         function playEpisode(url, buttonElement) {
@@ -238,8 +242,7 @@
             document.getElementById('playerFrame').src = PLAYER_PREFIX + url;
         }
 
-        initPlayerNav();
-        loadVideoDetail();
+        initPlayer();
     </script>
 </body>
 </html>
