@@ -7,8 +7,8 @@ import urllib.request
 
 BASE_URL = "https://apiyutu.com/api.php/providedao/vod/?ac=detail"
 LIST_URL = "https://apiyutu.com/api.php/providedao/vod/?ac=list"
-MAX_WORKERS = 50
-PAGE_SIZE = 24  # 每页 24 条，与前端保持严格一致
+MAX_WORKERS = 100
+PAGE_SIZE = 24
 
 def fetch_page(page, retries=5):
     url = f"{BASE_URL}&pg={page}"
@@ -69,7 +69,6 @@ def main():
         except Exception:
             existing_videos_map = {}
 
-    # 首次运行全量采集，之后每天中午增量更新前 10 页
     if is_first_run:
         print(f"🚀 检测到本地无数据，开始【首次全量采集】，共计 {total_pages} 页...")
         pages_to_fetch = list(range(1, total_pages + 1))
@@ -116,7 +115,7 @@ def main():
     all_videos = list(existing_videos_map.values())
     all_videos.sort(key=lambda x: int(x.get("id", 0)), reverse=True)
 
-    print("4. 正在生成分类索引与按页分片...")
+    print("4. 正在生成分类索引、分页分片与全局搜索索引...")
     categories_dict = {c: [] for c in official_category_names}
     for vod in all_videos:
         cat = vod.get("category")
@@ -126,7 +125,6 @@ def main():
     cat_index = []
     vod_file_map = {}
 
-    # 处理最新发布 (取前 120 个，按 24个/页 分片)
     latest_items = all_videos[:120]
     latest_files = []
     for i in range(0, len(latest_items), PAGE_SIZE):
@@ -141,7 +139,6 @@ def main():
 
     cat_index.append({"name": "🔥 Latest Releases", "count": len(latest_items), "files": latest_files})
 
-    # 处理各个标准分类 (按 24个/页 分片)
     for c_name, v_list in categories_dict.items():
         if c_name == "Uncategorized":
             continue
@@ -172,7 +169,19 @@ def main():
     with open("data/vod_lookup.json", "w", encoding="utf-8") as f:
         json.dump(vod_file_map, f, ensure_ascii=False, separators=(",", ":"))
 
-    print(f"✅ 数据同步完成！总收录: {len(all_videos)} 个视频，有效分类数: {len(cat_index)}")
+    # 🚀 生成轻量级全站全局搜索索引文件 (search_index.json)
+    search_index = [{
+        "id": v.get("id"),
+        "title": v.get("title"),
+        "category": v.get("category"),
+        "pic": v.get("pic"),
+        "year": v.get("year")
+    } for v in all_videos]
+
+    with open("data/search_index.json", "w", encoding="utf-8") as f:
+        json.dump(search_index, f, ensure_ascii=False, separators=(",", ":"))
+
+    print(f"✅ 数据同步完成！总收录: {len(all_videos)} 个视频，已生成全局搜索索引。")
 
 if __name__ == "__main__":
     main()
