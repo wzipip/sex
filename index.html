@@ -60,7 +60,7 @@
         .nav-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
-            gap: 4px; /* 紧凑间距，无多余空白 */
+            gap: 4px;
             align-content: start;
         }
         .nav-item {
@@ -177,11 +177,10 @@
     </div>
 
     <script>
-        let currentCategoryMeta = null; // 当前分类元数据 {name, count, file, files}
+        let currentCategoryMeta = null; 
         let currentPage = 1;
         const pageSize = 24;
-        const chunkSize = 100; // 每个分片文件包含 100 条数据
-        let chunkCache = {};    // 缓存已加载的 JSON 分片，避免重复请求
+        let categoryItemsCache = {}; // 缓存当前分类的所有影片数据
         let searchKeyword = '';
 
         async function initSite() {
@@ -199,7 +198,7 @@
                     Number(c.count) > 0
                 );
 
-                let latestMeta = catIndex.find(c => c.name === '🔥 Latest Releases') || { name: '🔥 Latest Releases', count: 120, file: 'cat_latest.json' };
+                let latestMeta = catIndex.find(c => c.name === '🔥 Latest Releases') || { name: '🔥 Latest Releases', count: 120, files: [] };
 
                 let html = `<a href="index.html" class="nav-item ${!targetCat ? 'active' : ''}" onclick="switchCategory(${JSON.stringify(latestMeta).replace(/"/g, '&quot;')}, this); return false;">🔥 最新发布</a>`;
                 
@@ -238,74 +237,70 @@
             document.getElementById('searchInput').value = '';
             document.getElementById('sectionTitle').innerText = title;
 
-            await loadCurrentPageData();
+            await loadCategoryData();
         }
 
-        async function loadCurrentPageData() {
+        async function loadCategoryData() {
             const grid = document.getElementById('videoGrid');
             const paginationBar = document.getElementById('paginationBar');
             grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">正在加载...</div>';
             paginationBar.style.display = 'none';
 
             try {
-                const totalCount = currentCategoryMeta.count || 0;
-                document.getElementById('totalBadge').innerText = `共 ${totalCount} 部`;
+                const files = currentCategoryMeta.files || [];
+                const catKey = currentCategoryMeta.name;
 
-                if (totalCount === 0) {
+                if (files.length === 0) {
                     grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">该分类暂无影片</div>';
                     return;
                 }
 
-                // 计算当前页需要哪个分片文件 (每个分片 100 条)
-                const startIndex = (currentPage - 1) * pageSize;
-                const chunkIndex = Math.floor(startIndex / chunkSize);
-                
-                let fileToFetch = '';
-                if (currentCategoryMeta.file) {
-                    fileToFetch = currentCategoryMeta.file;
-                } else if (currentCategoryMeta.files) {
-                    fileToFetch = currentCategoryMeta.files[chunkIndex] || currentCategoryMeta.files[0];
+                // 如果尚未缓存该分类的所有数据，则并行请求该分类下的所有页分片文件
+                if (!categoryItemsCache[catKey]) {
+                    const promises = files.map(f => fetch(`data/${f}`).then(r => r.json()));
+                    const results = await Promise.all(promises);
+                    let allItems = [];
+                    results.forEach(chunk => {
+                        allItems = allItems.concat(chunk);
+                    });
+                    categoryItemsCache[catKey] = allItems;
                 }
 
-                // 异步加载分片（带缓存）
-                let chunkData = [];
-                if (chunkCache[fileToFetch]) {
-                    chunkData = chunkCache[fileToFetch];
-                } else {
-                    const r = await fetch(`data/${fileToFetch}`);
-                    chunkData = await r.json();
-                    chunkCache[fileToFetch] = chunkData;
-                }
-
-                // 从当前分片中截取当前页的 24 条数据
-                const localStart = startIndex % chunkSize;
-                let pageItems = chunkData.slice(localStart, localStart + pageSize);
-
-                // 如果启用了关键词搜索，对当前分片数据进行过滤
-                if (searchKeyword) {
-                    pageItems = chunkData.filter(v => v.title.toLowerCase().includes(searchKeyword));
-                }
-
-                renderGrid(pageItems, totalCount);
+                renderPage();
             } catch (e) {
                 console.error("加载数据失败", e);
                 grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">数据加载失败</div>';
             }
         }
 
-        function renderGrid(items, totalCount) {
+        function renderPage() {
             const grid = document.getElementById('videoGrid');
             const paginationBar = document.getElementById('paginationBar');
+            const catKey = currentCategoryMeta.name;
+            const allItems = categoryItemsCache[catKey] || [];
 
-            if (items.length === 0) {
+            // 过滤搜索关键字
+            let targetList = allItems;
+            if (searchKeyword) {
+                targetList = allItems.filter(v => v.title.toLowerCase().includes(searchKeyword));
+            }
+
+            document.getElementById('totalBadge').innerText = `共 ${targetList.length} 部`;
+
+            if (targetList.length === 0) {
                 grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">没有找到相关影片</div>';
                 paginationBar.style.display = 'none';
                 return;
             }
 
-            const totalPages = Math.ceil(totalCount / pageSize);
+            const totalPages = Math.ceil(targetList.length / pageSize);
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
 
-            grid.innerHTML = items.map(v => `
+            const start = (currentPage - 1) * pageSize;
+            const pageItems = targetList.slice(start, start + pageSize);
+
+            grid.innerHTML = pageItems.map(v => `
                 <a href="play.html?id=${v.id}" class="video-card">
                     <div class="thumb-wrap">
                         <img src="${v.pic || 'https://via.placeholder.com/300x180?text=No+Image'}" class="video-thumb" alt="${v.title}" loading="lazy">
@@ -334,13 +329,13 @@
 
         function changePage(step) {
             currentPage += step;
-            loadCurrentPageData();
+            renderPage();
         }
 
         function handleSearch() {
             searchKeyword = document.getElementById('searchInput').value.trim().toLowerCase();
             currentPage = 1;
-            loadCurrentPageData();
+            renderPage();
         }
 
         initSite();
