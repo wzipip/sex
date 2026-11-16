@@ -8,7 +8,7 @@ import urllib.request
 BASE_URL = "https://apiyutu.com/api.php/providedao/vod/?ac=detail"
 LIST_URL = "https://apiyutu.com/api.php/providedao/vod/?ac=list"
 MAX_WORKERS = 50
-CHUNK_SIZE = 100
+PAGE_SIZE = 24  # 每页 24 条，与前端保持严格一致
 
 def fetch_page(page, retries=5):
     url = f"{BASE_URL}&pg={page}"
@@ -50,7 +50,6 @@ def main():
         print(f"❌ 无法连接采集站: {e}")
         return
 
-    # 载入已有本地数据
     existing_videos_map = {}
     is_first_run = not os.path.exists("data/categories.json")
     
@@ -59,7 +58,7 @@ def main():
             with open("data/categories.json", "r", encoding="utf-8") as f:
                 cat_index = json.load(f)
             for cat in cat_index:
-                files = [cat.get("file")] if "file" in cat else cat.get("files", [])
+                files = cat.get("files", [])
                 for fname in files:
                     fpath = os.path.join("data", fname)
                     if os.path.exists(fpath):
@@ -70,13 +69,13 @@ def main():
         except Exception:
             existing_videos_map = {}
 
-    # 🎯 智能策略：如果是首次运行，全量采集所有页；如果已有缓存，则只采集前 5 页（日常增量更新）
+    # 首次运行全量采集，之后每天中午增量更新前 10 页
     if is_first_run:
         print(f"🚀 检测到本地无数据，开始【首次全量采集】，共计 {total_pages} 页...")
         pages_to_fetch = list(range(1, total_pages + 1))
     else:
-        print(f"🔄 本地已有缓存，执行【日常增量更新】，只抓取最新前 5 页...")
-        pages_to_fetch = list(range(1, min(6, total_pages + 1)))
+        print(f"🔄 执行日常增量更新，抓取最新前 10 页...")
+        pages_to_fetch = list(range(1, min(11, total_pages + 1)))
 
     fetched_videos = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -117,7 +116,7 @@ def main():
     all_videos = list(existing_videos_map.values())
     all_videos.sort(key=lambda x: int(x.get("id", 0)), reverse=True)
 
-    print("4. 正在生成分类索引与数据分片...")
+    print("4. 正在生成分类索引与按页分片...")
     categories_dict = {c: [] for c in official_category_names}
     for vod in all_videos:
         cat = vod.get("category")
@@ -125,42 +124,47 @@ def main():
             categories_dict.setdefault(cat, []).append(vod)
 
     cat_index = []
-    latest_items = all_videos[:120]
-    with open(os.path.join("data", "cat_latest.json"), "w", encoding="utf-8") as f:
-        json.dump(latest_items, f, ensure_ascii=False)
-    cat_index.append({"name": "🔥 Latest Releases", "count": len(latest_items), "file": "cat_latest.json"})
-
     vod_file_map = {}
 
+    # 处理最新发布 (取前 120 个，按 24个/页 分片)
+    latest_items = all_videos[:120]
+    latest_files = []
+    for i in range(0, len(latest_items), PAGE_SIZE):
+        chunk = latest_items[i : i + PAGE_SIZE]
+        page_num = i // PAGE_SIZE + 1
+        fname = f"cat_latest_p{page_num}.json"
+        with open(os.path.join("data", fname), "w", encoding="utf-8") as f:
+            json.dump(chunk, f, ensure_ascii=False)
+        latest_files.append(fname)
+        for vod in chunk:
+            vod_file_map[str(vod.get("id"))] = fname
+
+    cat_index.append({"name": "🔥 Latest Releases", "count": len(latest_items), "files": latest_files})
+
+    # 处理各个标准分类 (按 24个/页 分片)
     for c_name, v_list in categories_dict.items():
         if c_name == "Uncategorized":
             continue
         safe_hash = hashlib.md5(c_name.encode("utf-8")).hexdigest()[:10]
+        
+        files_list = []
         if not v_list:
-            file_name = f"cat_{safe_hash}.json"
-            with open(os.path.join("data", file_name), "w", encoding="utf-8") as f:
+            fname = f"cat_{safe_hash}_p1.json"
+            with open(os.path.join("data", fname), "w", encoding="utf-8") as f:
                 json.dump([], f, ensure_ascii=False)
-            cat_index.append({"name": c_name, "count": 0, "file": file_name})
-            continue
-
-        if len(v_list) > CHUNK_SIZE:
-            sub_files = []
-            for i in range(0, len(v_list), CHUNK_SIZE):
-                chunk = v_list[i : i + CHUNK_SIZE]
-                chunk_file = f"cat_{safe_hash}_part{i // CHUNK_SIZE + 1}.json"
-                for vod in chunk:
-                    vod_file_map[str(vod.get("id"))] = chunk_file
-                with open(os.path.join("data", chunk_file), "w", encoding="utf-8") as f:
-                    json.dump(chunk, f, ensure_ascii=False)
-                sub_files.append(chunk_file)
-            cat_index.append({"name": c_name, "count": len(v_list), "files": sub_files})
+            files_list.append(fname)
         else:
-            file_name = f"cat_{safe_hash}.json"
-            for vod in v_list:
-                vod_file_map[str(vod.get("id"))] = file_name
-            with open(os.path.join("data", file_name), "w", encoding="utf-8") as f:
-                json.dump(v_list, f, ensure_ascii=False)
-            cat_index.append({"name": c_name, "count": len(v_list), "file": file_name})
+            for i in range(0, len(v_list), PAGE_SIZE):
+                chunk = v_list[i : i + PAGE_SIZE]
+                page_num = i // PAGE_SIZE + 1
+                fname = f"cat_{safe_hash}_p{page_num}.json"
+                with open(os.path.join("data", fname), "w", encoding="utf-8") as f:
+                    json.dump(chunk, f, ensure_ascii=False)
+                files_list.append(fname)
+                for vod in chunk:
+                    vod_file_map[str(vod.get("id"))] = fname
+
+        cat_index.append({"name": c_name, "count": len(v_list), "files": files_list})
 
     with open("data/categories.json", "w", encoding="utf-8") as f:
         json.dump(cat_index, f, ensure_ascii=False, indent=2)
