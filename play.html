@@ -47,7 +47,7 @@
 
         .container { max-width: 1100px; margin: 12px auto; padding: 0 10px; }
 
-        /* 紧凑整齐的分类导航（与首页完全一致） */
+        /* 紧凑整齐的分类导航 */
         .nav-panel {
             background: var(--bg-nav); border: 1px solid var(--border-color);
             border-radius: 8px; padding: 8px; margin-bottom: 14px;
@@ -152,7 +152,7 @@
         const PLAYER_PREFIX = "https://yutujx.com/?url=";
 
         async function initPlayer() {
-            // 1. 异步加载顶部紧凑导航
+            // 1. 加载分类导航
             try {
                 const res = await fetch('data/categories.json');
                 const catIndex = await res.json();
@@ -171,36 +171,53 @@
                 console.error("加载导航失败", e);
             }
 
-            // 2. 按需精准加载当前视频详情（通过 vod_lookup 索引直接找对应分片）
+            // 2. 智能精准获取当前视频详情（双重检索：先用索引查找，失败则全局扫描兜底）
             if (!videoId) {
                 document.getElementById('videoTitle').innerText = "错误：未指定影片 ID";
                 return;
             }
 
+            let video = null;
             try {
+                // 尝试方法 A：通过 vod_lookup.json 快速查找
                 const lookupRes = await fetch('data/vod_lookup.json');
                 const vodLookup = await lookupRes.json();
                 const dataFile = vodLookup[videoId];
 
-                if (!dataFile) {
-                    document.getElementById('videoTitle').innerText = "未找到该影片数据，请确认采集已完成。";
-                    return;
+                if (dataFile) {
+                    const chunkRes = await fetch(`data/${dataFile}`);
+                    const chunkData = await chunkRes.json();
+                    video = chunkData.find(v => String(v.id) === String(videoId));
                 }
 
-                const chunkRes = await fetch(`data/${dataFile}`);
-                const chunkData = await chunkRes.json();
-                const video = chunkData.find(v => String(v.id) === String(videoId));
+                // 如果方法 A 未找到，启用方法 B：遍历 categories.json 全局扫描兜底
+                if (!video) {
+                    const catRes = await fetch('data/categories.json');
+                    const catIndex = await catRes.json();
+                    for (let cat of catIndex) {
+                        let files = cat.files || (cat.file ? [cat.file] : []);
+                        for (let f of files) {
+                            try {
+                                const r = await fetch(`data/${f}`);
+                                const chunk = await r.json();
+                                video = chunk.find(v => String(v.id) === String(videoId));
+                                if (video) break;
+                            } catch (err) {}
+                        }
+                        if (video) break;
+                    }
+                }
 
                 if (!video) {
-                    document.getElementById('videoTitle').innerText = "影片详情加载失败。";
+                    document.getElementById('videoTitle').innerText = "未找到该影片详情，请确认数据已采集完整。";
                     return;
                 }
 
-                // 3. 渲染详情与播放器
+                // 3. 渲染详情与播放
                 document.getElementById('videoTitle').innerText = video.title;
                 document.title = `${video.title} - StreamVault`;
                 document.getElementById('videoMeta').innerHTML = `
-                    <span class="tag">分类：${video.category}</span>
+                    <span class="tag">分类：${video.category || '精选'}</span>
                     <span class="tag">年份：${video.year || '2026'}</span>
                     <span class="tag">地区：${video.area || '未知'}</span>
                 `;
