@@ -2,7 +2,7 @@ name: Auto Update Video Data
 
 on:
   schedule:
-    # 每天中午 12:00（北京时间）自动触发，即 UTC 时间 04:00
+    # 每天北京时间中午 12:00 自动运行 (UTC 04:00)
     - cron: '0 4 * * *'
   workflow_dispatch:
 
@@ -28,6 +28,12 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          # 修正这里：只 add 实际存在的 data/ 目录
+          
+          # 核心修复：精准添加 data/ 目录，彻底杜绝 sitemap.xml 路径不匹配导致的 128 报错
           git add data/
-          git diff --quiet && git diff --cached --quiet || (git commit -m "Automated update (Daily Top 10 Pages): $(date -u +'%Y-%m-%d %H:%M:%S')" && git push)
+          
+          # 兼容保护：如果未来生成了 sitemap.xml 则自动提交，没有则跳过不报错
+          [ -f sitemap.xml ] && git add sitemap.xml || true
+          
+          # 检查是否有改动，有则自动提交并推送
+          git diff --quiet && git diff --cached --quiet || (git commit -m "Automated update (Data & Index): $(date -u +'%Y-%m-%d %H:%M:%S')" && git push)
