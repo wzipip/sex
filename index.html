@@ -10,7 +10,6 @@
             --bg-card: #181a20;
             --bg-nav: #14151a;
             --accent: #ff3b5c;
-            --accent-hover: #ff5270;
             --text-primary: #f5f5f7;
             --text-muted: #8e929f;
             --border-color: rgba(255, 255, 255, 0.08);
@@ -18,14 +17,14 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: var(--bg-main); color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
-        /* 现代吸顶玻璃态头部 */
+        /* 现代吸顶头部 */
         .site-header {
             position: sticky; top: 0; z-index: 100;
             background: rgba(20, 21, 26, 0.88);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-color);
-            padding: 12px 16px;
+            padding: 10px 16px;
         }
         .header-inner {
             max-width: 1240px; margin: 0 auto;
@@ -33,110 +32,111 @@
         }
         .brand {
             display: flex; align-items: center; gap: 8px;
-            text-decoration: none; color: #fff; font-size: 19px; font-weight: 800; letter-spacing: 0.5px;
+            text-decoration: none; color: #fff; font-size: 18px; font-weight: 800; letter-spacing: 0.5px;
         }
         .brand-dot {
-            width: 10px; height: 10px; border-radius: 50%;
-            background: var(--accent); box-shadow: 0 0 10px var(--accent);
+            width: 9px; height: 9px; border-radius: 50%;
+            background: var(--accent); box-shadow: 0 0 8px var(--accent);
         }
         .search-box {
             display: flex; align-items: center; background: #22252e;
-            border: 1px solid var(--border-color); border-radius: 20px;
-            padding: 5px 12px; width: 180px; transition: width 0.25s, border-color 0.2s;
+            border: 1px solid var(--border-color); border-radius: 18px;
+            padding: 4px 12px; width: 170px; transition: width 0.25s, border-color 0.2s;
         }
-        .search-box:focus-within { width: 240px; border-color: var(--accent); }
+        .search-box:focus-within { width: 230px; border-color: var(--accent); }
         .search-box input {
             background: transparent; border: none; outline: none;
             color: #fff; font-size: 12px; width: 100%;
         }
 
-        .container { max-width: 1240px; margin: 14px auto; padding: 0 12px; }
+        .container { max-width: 1240px; margin: 12px auto; padding: 0 10px; }
 
-        /* 全新整齐网格分类导航 */
+        /* 分类导航：紧凑、无空白、完全对齐 */
         .nav-panel {
             background: var(--bg-nav); border: 1px solid var(--border-color);
-            border-radius: 10px; padding: 10px; margin-bottom: 18px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            border-radius: 8px; padding: 8px; margin-bottom: 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
         }
         .nav-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
-            gap: 6px;
+            grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+            gap: 4px; /* 紧凑间距，无多余空白 */
+            align-content: start;
         }
         .nav-item {
             display: flex; align-items: center; justify-content: center;
             background: #1e2028; color: #c8ccd6;
-            text-decoration: none; font-size: 12px; font-weight: 500;
-            padding: 7px 6px; border-radius: 6px;
+            text-decoration: none; font-size: 11px; font-weight: 500;
+            padding: 6px 4px; border-radius: 4px;
             border: 1px solid transparent;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            transition: all 0.18s ease;
+            transition: all 0.15s ease;
         }
         .nav-item:hover {
-            background: #282b36; color: #fff; border-color: rgba(255,255,255,0.15);
+            background: #282b36; color: #fff; border-color: rgba(255,255,255,0.12);
         }
         .nav-item.active {
             background: linear-gradient(135deg, #ff3b5c, #e02444);
             color: #fff; font-weight: 600;
-            box-shadow: 0 2px 10px rgba(255, 59, 92, 0.35);
+            box-shadow: 0 2px 8px rgba(255, 59, 92, 0.3);
         }
 
         /* 栏目标题 */
         .section-header {
             display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);
+            margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border-color);
         }
         .section-title {
-            font-size: 16px; font-weight: 700; color: #fff;
+            font-size: 15px; font-weight: 700; color: #fff;
             display: flex; align-items: center; gap: 8px;
         }
         .section-title::before {
-            content: ""; display: inline-block; width: 4px; height: 16px;
+            content: ""; display: inline-block; width: 3px; height: 14px;
             background: var(--accent); border-radius: 2px;
         }
         .count-badge { font-size: 12px; color: var(--text-muted); }
 
-        /* 视频卡片网格 */
+        /* 视频网格 */
         .video-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 10px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(152px, 1fr)); gap: 8px;
         }
         .video-card {
-            background: var(--bg-card); border-radius: 8px; overflow: hidden;
+            background: var(--bg-card); border-radius: 6px; overflow: hidden;
             border: 1px solid var(--border-color); text-decoration: none; color: inherit;
-            display: flex; flex-direction: column; transition: transform 0.2s, border-color 0.2s;
+            display: flex; flex-direction: column; transition: transform 0.18s, border-color 0.18s;
         }
-        .video-card:hover { transform: translateY(-3px); border-color: rgba(255, 59, 92, 0.5); }
+        .video-card:hover { transform: translateY(-2px); border-color: rgba(255, 59, 92, 0.5); }
         .thumb-wrap { position: relative; width: 100%; padding-top: 62%; background: #22252e; overflow: hidden; }
         .video-thumb { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
         .badge-hd {
-            position: absolute; top: 6px; right: 6px;
-            background: rgba(0, 0, 0, 0.72); color: #fff;
-            font-size: 10px; font-weight: 700; padding: 2px 5px; border-radius: 4px;
+            position: absolute; top: 5px; right: 5px;
+            background: rgba(0, 0, 0, 0.75); color: #fff;
+            font-size: 9px; font-weight: 700; padding: 2px 4px; border-radius: 3px;
         }
-        .video-info { padding: 8px 10px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .video-info { padding: 7px 8px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
         .video-title {
-            font-size: 13px; font-weight: 500; color: #eee; margin-bottom: 6px;
+            font-size: 12px; font-weight: 500; color: #eee; margin-bottom: 4px;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .video-meta { font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between; }
+        .video-meta { font-size: 10px; color: var(--text-muted); display: flex; justify-content: space-between; }
 
         /* 分页栏 */
         .pagination {
-            display: flex; justify-content: center; align-items: center; gap: 12px; margin: 26px 0 36px;
+            display: flex; justify-content: center; align-items: center; gap: 10px; margin: 22px 0 30px;
         }
         .page-btn {
             background: #1e2028; color: #e0e0e0; border: 1px solid var(--border-color);
-            padding: 7px 16px; font-size: 12px; font-weight: 600; border-radius: 6px;
-            cursor: pointer; transition: 0.18s;
+            padding: 6px 14px; font-size: 12px; font-weight: 600; border-radius: 5px;
+            cursor: pointer; transition: 0.15s;
         }
         .page-btn:hover:not(:disabled) { background: var(--accent); color: #fff; border-color: var(--accent); }
         .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
         .page-info { font-size: 12px; color: var(--text-muted); }
 
         @media (min-width: 768px) {
-            .nav-grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 8px; }
-            .nav-item { font-size: 13px; padding: 8px 10px; }
-            .video-grid { grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 16px; }
+            .nav-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; }
+            .nav-item { font-size: 12px; padding: 7px 6px; }
+            .video-grid { grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); gap: 12px; }
         }
     </style>
 </head>
@@ -149,13 +149,13 @@
                 <span>STREAMVAULT</span>
             </a>
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="搜索当前分类影片..." oninput="filterVideos()">
+                <input type="text" id="searchInput" placeholder="搜索当前分类..." oninput="handleSearch()">
             </div>
         </div>
     </header>
 
     <div class="container">
-        <!-- 整齐自适应网格导航 -->
+        <!-- 紧凑整齐的导航 -->
         <div class="nav-panel">
             <nav class="nav-grid" id="navGrid"></nav>
         </div>
@@ -177,10 +177,12 @@
     </div>
 
     <script>
-        let rawVideos = [];
-        let filteredVideos = [];
+        let currentCategoryMeta = null; // 当前分类元数据 {name, count, file, files}
         let currentPage = 1;
         const pageSize = 24;
+        const chunkSize = 100; // 每个分片文件包含 100 条数据
+        let chunkCache = {};    // 缓存已加载的 JSON 分片，避免重复请求
+        let searchKeyword = '';
 
         async function initSite() {
             const navGrid = document.getElementById('navGrid');
@@ -191,104 +193,119 @@
                 const res = await fetch('data/categories.json');
                 const catIndex = await res.json();
 
-                // 过滤掉 Uncategorized 以及数量为 0 的空分类
                 const validCats = catIndex.filter(c => 
                     c.name !== '🔥 Latest Releases' && 
                     c.name !== 'Uncategorized' && 
                     Number(c.count) > 0
                 );
 
-                let html = `<a href="index.html" class="nav-item ${!targetCat ? 'active' : ''}" data-cat="latest" onclick="switchCategory('cat_latest.json', '🔥 最新发布', this); return false;">🔥 最新发布</a>`;
+                let latestMeta = catIndex.find(c => c.name === '🔥 Latest Releases') || { name: '🔥 Latest Releases', count: 120, file: 'cat_latest.json' };
+
+                let html = `<a href="index.html" class="nav-item ${!targetCat ? 'active' : ''}" onclick="switchCategory(${JSON.stringify(latestMeta).replace(/"/g, '&quot;')}, this); return false;">🔥 最新发布</a>`;
                 
                 html += validCats.map(c => {
-                    const fileRef = c.file || (c.files ? c.files.join(',') : '');
                     const isActive = targetCat === c.name ? 'active' : '';
-                    return `<a href="index.html?cat=${encodeURIComponent(c.name)}" class="nav-item ${isActive}" data-cat="${c.name}" onclick="switchCategory('${fileRef}', '${c.name}', this); return false;" title="${c.name} (${c.count})">${c.name}</a>`;
+                    return `<a href="index.html?cat=${encodeURIComponent(c.name)}" class="nav-item ${isActive}" onclick="switchCategory(${JSON.stringify(c).replace(/"/g, '&quot;')}, this); return false;" title="${c.name} (${c.count})">${c.name}</a>`;
                 }).join('');
 
                 navGrid.innerHTML = html;
 
-                // 根据 URL 参数决定默认加载哪个分类
                 if (targetCat) {
                     const matched = validCats.find(c => c.name === targetCat);
                     if (matched) {
-                        const fileRef = matched.file || (matched.files ? matched.files.join(',') : '');
-                        await loadCategoryData(fileRef, matched.name);
+                        await switchCategory(matched, document.querySelector(`[data-cat="${targetCat}"]`));
                         return;
                     }
                 }
-                await loadCategoryData('cat_latest.json', '🔥 最新发布');
+                await switchCategory(latestMeta, navGrid.querySelector('a'));
             } catch (e) {
-                console.error("初始化失败", e);
-                navGrid.innerHTML = '<div style="color:#888;font-size:12px;padding:8px;">暂无分类数据，请先运行采集脚本生成 data/ 目录。</div>';
+                console.error("初始化导航失败", e);
+                navGrid.innerHTML = '<div style="color:#888;font-size:12px;padding:6px;">暂无分类数据，请运行采集脚本。</div>';
             }
         }
 
-        function switchCategory(fileRef, title, element) {
+        async function switchCategory(catMeta, element) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             if (element) element.classList.add('active');
-            
-            // 同步更新浏览器地址栏参数，保持多页面体验
-            const newUrl = title === '🔥 最新发布' ? 'index.html' : `index.html?cat=${encodeURIComponent(title)}`;
+
+            const title = catMeta.name.replace('🔥 Latest Releases', '🔥 最新发布');
+            const newUrl = (catMeta.name === '🔥 Latest Releases') ? 'index.html' : `index.html?cat=${encodeURIComponent(catMeta.name)}`;
             window.history.pushState({}, '', newUrl);
-            
+
+            currentCategoryMeta = catMeta;
+            currentPage = 1;
+            searchKeyword = '';
             document.getElementById('searchInput').value = '';
-            loadCategoryData(fileRef, title);
+            document.getElementById('sectionTitle').innerText = title;
+
+            await loadCurrentPageData();
         }
 
-        async function loadCategoryData(fileRef, title) {
-            document.getElementById('sectionTitle').innerText = title;
-            currentPage = 1;
+        async function loadCurrentPageData() {
             const grid = document.getElementById('videoGrid');
-            grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 40px;">正在加载影片...</div>';
-            document.getElementById('paginationBar').style.display = 'none';
+            const paginationBar = document.getElementById('paginationBar');
+            grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">正在加载...</div>';
+            paginationBar.style.display = 'none';
 
             try {
-                let allVideos = [];
-                if (fileRef.includes(',')) {
-                    for (let f of fileRef.split(',')) {
-                        const r = await fetch(`data/${f.trim()}`);
-                        allVideos = allVideos.concat(await r.json());
-                    }
-                } else {
-                    const r = await fetch(`data/${fileRef}`);
-                    allVideos = await r.json();
+                const totalCount = currentCategoryMeta.count || 0;
+                document.getElementById('totalBadge').innerText = `共 ${totalCount} 部`;
+
+                if (totalCount === 0) {
+                    grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">该分类暂无影片</div>';
+                    return;
                 }
 
-                rawVideos = allVideos;
-                filteredVideos = allVideos;
-                renderPage();
+                // 计算当前页需要哪个分片文件 (每个分片 100 条)
+                const startIndex = (currentPage - 1) * pageSize;
+                const chunkIndex = Math.floor(startIndex / chunkSize);
+                
+                let fileToFetch = '';
+                if (currentCategoryMeta.file) {
+                    fileToFetch = currentCategoryMeta.file;
+                } else if (currentCategoryMeta.files) {
+                    fileToFetch = currentCategoryMeta.files[chunkIndex] || currentCategoryMeta.files[0];
+                }
+
+                // 异步加载分片（带缓存）
+                let chunkData = [];
+                if (chunkCache[fileToFetch]) {
+                    chunkData = chunkCache[fileToFetch];
+                } else {
+                    const r = await fetch(`data/${fileToFetch}`);
+                    chunkData = await r.json();
+                    chunkCache[fileToFetch] = chunkData;
+                }
+
+                // 从当前分片中截取当前页的 24 条数据
+                const localStart = startIndex % chunkSize;
+                let pageItems = chunkData.slice(localStart, localStart + pageSize);
+
+                // 如果启用了关键词搜索，对当前分片数据进行过滤
+                if (searchKeyword) {
+                    pageItems = chunkData.filter(v => v.title.toLowerCase().includes(searchKeyword));
+                }
+
+                renderGrid(pageItems, totalCount);
             } catch (e) {
-                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 40px;">数据加载失败，请检查 data/ 目录文件。</div>';
+                console.error("加载数据失败", e);
+                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">数据加载失败</div>';
             }
         }
 
-        function filterVideos() {
-            const kw = document.getElementById('searchInput').value.trim().toLowerCase();
-            filteredVideos = kw ? rawVideos.filter(v => v.title.toLowerCase().includes(kw)) : rawVideos;
-            currentPage = 1;
-            renderPage();
-        }
-
-        function renderPage() {
+        function renderGrid(items, totalCount) {
             const grid = document.getElementById('videoGrid');
             const paginationBar = document.getElementById('paginationBar');
-            document.getElementById('totalBadge').innerText = `共 ${filteredVideos.length} 部`;
 
-            if (filteredVideos.length === 0) {
-                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 40px;">当前没有找到相关影片。</div>';
+            if (items.length === 0) {
+                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">没有找到相关影片</div>';
                 paginationBar.style.display = 'none';
                 return;
             }
 
-            const totalPages = Math.ceil(filteredVideos.length / pageSize);
-            if (currentPage > totalPages) currentPage = totalPages;
-            if (currentPage < 1) currentPage = 1;
+            const totalPages = Math.ceil(totalCount / pageSize);
 
-            const start = (currentPage - 1) * pageSize;
-            const pageItems = filteredVideos.slice(start, start + pageSize);
-
-            grid.innerHTML = pageItems.map(v => `
+            grid.innerHTML = items.map(v => `
                 <a href="play.html?id=${v.id}" class="video-card">
                     <div class="thumb-wrap">
                         <img src="${v.pic || 'https://via.placeholder.com/300x180?text=No+Image'}" class="video-thumb" alt="${v.title}" loading="lazy">
@@ -317,7 +334,13 @@
 
         function changePage(step) {
             currentPage += step;
-            renderPage();
+            loadCurrentPageData();
+        }
+
+        function handleSearch() {
+            searchKeyword = document.getElementById('searchInput').value.trim().toLowerCase();
+            currentPage = 1;
+            loadCurrentPageData();
         }
 
         initSite();
