@@ -15,7 +15,26 @@
             --border-color: rgba(255, 255, 255, 0.08);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background-color: var(--bg-main); color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        
+        /* 让整个页面采用 Flex 粘性底部布局 */
+        html, body { height: 100%; }
+        body { 
+            background-color: var(--bg-main); 
+            color: var(--text-primary); 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+        }
+        .page-wrapper {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .container { 
+            flex: 1; /* 撑开主体，把页脚顶到底部 */
+            max-width: 1240px; 
+            margin: 12px auto; 
+            padding: 0 10px; 
+            width: 100%;
+        }
 
         /* 现代吸顶头部 */
         .site-header {
@@ -48,8 +67,6 @@
             background: transparent; border: none; outline: none;
             color: #fff; font-size: 12px; width: 100%;
         }
-
-        .container { max-width: 1240px; margin: 12px auto; padding: 0 10px; }
 
         /* 分类导航：紧凑、无空白、完全对齐 */
         .nav-panel {
@@ -133,6 +150,33 @@
         .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
         .page-info { font-size: 12px; color: var(--text-muted); }
 
+        /* 现代风格页脚 */
+        .site-footer {
+            background: var(--bg-nav);
+            border-top: 1px solid var(--border-color);
+            padding: 24px 16px;
+            margin-top: 40px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+        .footer-content {
+            max-width: 1240px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+        }
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
         @media (min-width: 768px) {
             .nav-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; }
             .nav-item { font-size: 12px; padding: 7px 6px; }
@@ -142,38 +186,51 @@
 </head>
 <body>
 
-    <header class="site-header">
-        <div class="header-inner">
-            <a href="index.html" class="brand">
-                <span class="brand-dot"></span>
-                <span>STREAMVAULT</span>
-            </a>
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="全站搜索影片..." oninput="handleSearch()">
+    <div class="page-wrapper">
+        <header class="site-header">
+            <div class="header-inner">
+                <a href="index.html" class="brand">
+                    <span class="brand-dot"></span>
+                    <span>STREAMVAULT</span>
+                </a>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="全站搜索影片..." oninput="handleSearch()">
+                </div>
             </div>
-        </div>
-    </header>
+        </header>
 
-    <div class="container">
-        <!-- 紧凑整齐的导航 -->
-        <div class="nav-panel">
-            <nav class="nav-grid" id="navGrid"></nav>
+        <div class="container">
+            <!-- 紧凑整齐的导航 -->
+            <div class="nav-panel">
+                <nav class="nav-grid" id="navGrid"></nav>
+            </div>
+
+            <section>
+                <div class="section-header">
+                    <div class="section-title" id="sectionTitle">🔥 最新发布</div>
+                    <div class="count-badge" id="totalBadge"></div>
+                </div>
+                
+                <div class="video-grid" id="videoGrid"></div>
+                
+                <div class="pagination" id="paginationBar" style="display: none;">
+                    <button class="page-btn" id="prevBtn" onclick="changePage(-1)">上一页</button>
+                    <span class="page-info" id="pageInfo">第 1 / 1 页</span>
+                    <button class="page-btn" id="nextBtn" onclick="changePage(1)">下一页</button>
+                </div>
+            </section>
         </div>
 
-        <section>
-            <div class="section-header">
-                <div class="section-title" id="sectionTitle">🔥 最新发布</div>
-                <div class="count-badge" id="totalBadge"></div>
+        <!-- 底部页脚 -->
+        <footer class="site-footer">
+            <div class="footer-content">
+                <p>&copy; 2026 <strong>StreamVault</strong>. All rights reserved.</p>
+                <p class="footer-links">
+                    <span>高速影视聚合引擎</span> &bull; 
+                    <a href="index.html">返回首页</a>
+                </p>
             </div>
-            
-            <div class="video-grid" id="videoGrid"></div>
-            
-            <div class="pagination" id="paginationBar" style="display: none;">
-                <button class="page-btn" id="prevBtn" onclick="changePage(-1)">上一页</button>
-                <span class="page-info" id="pageInfo">第 1 / 1 页</span>
-                <button class="page-btn" id="nextBtn" onclick="changePage(1)">下一页</button>
-            </div>
-        </section>
+        </footer>
     </div>
 
     <script>
@@ -183,7 +240,7 @@
         const pageSize = 24; 
         let pageCache = {};  
         
-        let globalSearchIndex = null; // 全站搜索轻量索引缓存
+        let globalSearchIndex = null; 
         let searchKeyword = '';
 
         async function initSite() {
@@ -215,7 +272,6 @@
 
                 navGrid.innerHTML = html;
 
-                // 如果 URL 中带有搜索参数 ?q=xxx
                 if (targetQuery) {
                     document.getElementById('searchInput').value = targetQuery;
                     searchKeyword = targetQuery.trim().toLowerCase();
@@ -282,7 +338,6 @@
             window.history.pushState({}, '', newUrl);
         }
 
-        // 🚀 高性能全站全局搜索核心函数
         async function loadGlobalSearchResults() {
             const grid = document.getElementById('videoGrid');
             const paginationBar = document.getElementById('paginationBar');
@@ -290,13 +345,11 @@
             paginationBar.style.display = 'none';
 
             try {
-                // 异步加载轻量级全站搜索索引（仅首次加载，之后缓存在内存中，速度极快）
                 if (!globalSearchIndex) {
                     const res = await fetch('data/search_index.json');
                     globalSearchIndex = await res.json();
                 }
 
-                // 全站模糊匹配
                 const matchedList = globalSearchIndex.filter(v => v.title.toLowerCase().includes(searchKeyword));
                 const totalPages = Math.ceil(matchedList.length / pageSize) || 1;
                 
@@ -315,7 +368,6 @@
         }
 
         async function loadPageData() {
-            // 如果处于搜索状态，走全局搜索逻辑
             if (searchKeyword) {
                 await loadGlobalSearchResults();
                 return;
@@ -422,7 +474,6 @@
                 document.getElementById('sectionTitle').innerText = `🔍 全站搜索: "${val}"`;
                 loadGlobalSearchResults();
             } else {
-                // 清空搜索框时恢复到默认“最新发布”
                 const firstNav = document.querySelector('.nav-item');
                 if (firstNav) firstNav.click();
             }
