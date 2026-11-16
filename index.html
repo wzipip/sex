@@ -177,6 +177,7 @@
     </div>
 
     <script>
+        let categoriesList = [];
         let currentCategoryMeta = null; 
         let currentPage = 1;
         const pageSize = 24;
@@ -187,10 +188,12 @@
             const navGrid = document.getElementById('navGrid');
             const urlParams = new URLSearchParams(window.location.search);
             const targetCat = urlParams.get('cat');
+            const targetPage = parseInt(urlParams.get('page')) || 1;
 
             try {
                 const res = await fetch('data/categories.json');
                 const catIndex = await res.json();
+                categoriesList = catIndex;
 
                 const validCats = catIndex.filter(c => 
                     c.name !== '🔥 Latest Releases' && 
@@ -200,44 +203,70 @@
 
                 let latestMeta = catIndex.find(c => c.name === '🔥 Latest Releases') || { name: '🔥 Latest Releases', count: 120, files: [] };
 
-                let html = `<a href="index.html" class="nav-item ${!targetCat ? 'active' : ''}" onclick="switchCategory(${JSON.stringify(latestMeta).replace(/"/g, '&quot;')}, this); return false;">🔥 最新发布</a>`;
+                let html = `<a href="index.html" class="nav-item ${!targetCat ? 'active' : ''}" onclick="switchCategory('🔥 Latest Releases', 1, this); return false;">🔥 最新发布</a>`;
                 
                 html += validCats.map(c => {
                     const isActive = targetCat === c.name ? 'active' : '';
-                    return `<a href="index.html?cat=${encodeURIComponent(c.name)}" class="nav-item ${isActive}" onclick="switchCategory(${JSON.stringify(c).replace(/"/g, '&quot;')}, this); return false;" title="${c.name} (${c.count})">${c.name}</a>`;
+                    return `<a href="index.html?cat=${encodeURIComponent(c.name)}" class="nav-item ${isActive}" data-cat="${c.name}" onclick="switchCategory('${c.name}', 1, this); return false;" title="${c.name} (${c.count})">${c.name}</a>`;
                 }).join('');
 
                 navGrid.innerHTML = html;
 
+                // 确定目标分类
+                let activeMeta = latestMeta;
                 if (targetCat) {
-                    const matched = validCats.find(c => c.name === targetCat);
-                    if (matched) {
-                        await switchCategory(matched, document.querySelector(`[data-cat="${targetCat}"]`));
-                        return;
-                    }
+                    const matched = catIndex.find(c => c.name === targetCat);
+                    if (matched) activeMeta = matched;
                 }
-                await switchCategory(latestMeta, navGrid.querySelector('a'));
+
+                currentPage = targetPage;
+                const activeEl = targetCat ? document.querySelector(`[data-cat="${targetCat}"]`) : navGrid.querySelector('a');
+                
+                if (activeEl) {
+                    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                    activeEl.classList.add('active');
+                }
+
+                currentCategoryMeta = activeMeta;
+                document.getElementById('sectionTitle').innerText = activeMeta.name.replace('🔥 Latest Releases', '🔥 最新发布');
+                
+                await loadCategoryData();
             } catch (e) {
                 console.error("初始化导航失败", e);
                 navGrid.innerHTML = '<div style="color:#888;font-size:12px;padding:6px;">暂无分类数据，请运行采集脚本。</div>';
             }
         }
 
-        async function switchCategory(catMeta, element) {
+        async function switchCategory(catName, pageNum, element) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             if (element) element.classList.add('active');
 
-            const title = catMeta.name.replace('🔥 Latest Releases', '🔥 最新发布');
-            const newUrl = (catMeta.name === '🔥 Latest Releases') ? 'index.html' : `index.html?cat=${encodeURIComponent(catMeta.name)}`;
-            window.history.pushState({}, '', newUrl);
-
-            currentCategoryMeta = catMeta;
-            currentPage = 1;
+            const matchedMeta = categoriesList.find(c => c.name === catName) || categoriesList[0];
+            currentCategoryMeta = matchedMeta;
+            currentPage = pageNum || 1;
             searchKeyword = '';
             document.getElementById('searchInput').value = '';
-            document.getElementById('sectionTitle').innerText = title;
+            document.getElementById('sectionTitle').innerText = matchedMeta.name.replace('🔥 Latest Releases', '🔥 最新发布');
 
+            updateUrlState();
             await loadCategoryData();
+        }
+
+        function updateUrlState() {
+            const catName = currentCategoryMeta.name;
+            let newUrl = 'index.html';
+            const params = [];
+
+            if (catName !== '🔥 Latest Releases') {
+                params.push(`cat=${encodeURIComponent(catName)}`);
+            }
+            if (currentPage > 1) {
+                params.push(`page=${currentPage}`);
+            }
+            if (params.length > 0) {
+                newUrl += '?' + params.join('&');
+            }
+            window.history.pushState({}, '', newUrl);
         }
 
         async function loadCategoryData() {
@@ -248,14 +277,7 @@
 
             try {
                 const catKey = currentCategoryMeta.name;
-
-                // 兼容多文件分片（files）或单文件旧格式（file）
-                let files = [];
-                if (currentCategoryMeta.files && Array.isArray(currentCategoryMeta.files)) {
-                    files = currentCategoryMeta.files;
-                } else if (currentCategoryMeta.file) {
-                    files = [currentCategoryMeta.file];
-                }
+                let files = currentCategoryMeta.files || (currentCategoryMeta.file ? [currentCategoryMeta.file] : []);
 
                 if (files.length === 0) {
                     grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">该分类暂无影片</div>';
@@ -329,6 +351,8 @@
             } else {
                 paginationBar.style.display = 'none';
             }
+            
+            updateUrlState();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
