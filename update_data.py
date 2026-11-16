@@ -7,7 +7,7 @@ import urllib.request
 
 BASE_URL = "https://apiyutu.com/api.php/providedao/vod/?ac=detail"
 LIST_URL = "https://apiyutu.com/api.php/providedao/vod/?ac=list"
-MAX_WORKERS = 500
+MAX_WORKERS = 900
 PAGE_SIZE = 24
 
 def fetch_page(page, retries=5):
