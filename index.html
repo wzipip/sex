@@ -41,9 +41,9 @@
         .search-box {
             display: flex; align-items: center; background: #22252e;
             border: 1px solid var(--border-color); border-radius: 18px;
-            padding: 4px 12px; width: 170px; transition: width 0.25s, border-color 0.2s;
+            padding: 4px 12px; width: 180px; transition: width 0.25s, border-color 0.2s;
         }
-        .search-box:focus-within { width: 230px; border-color: var(--accent); }
+        .search-box:focus-within { width: 250px; border-color: var(--accent); }
         .search-box input {
             background: transparent; border: none; outline: none;
             color: #fff; font-size: 12px; width: 100%;
@@ -149,7 +149,7 @@
                 <span>STREAMVAULT</span>
             </a>
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="搜索当前页..." oninput="handleSearch()">
+                <input type="text" id="searchInput" placeholder="全站搜索影片..." oninput="handleSearch()">
             </div>
         </div>
     </header>
@@ -180,8 +180,10 @@
         let categoriesList = [];
         let currentCategoryMeta = null; 
         let currentPage = 1;
-        const pageSize = 24; // 每页 24 条，正好对应 Python 生成的每页文件
-        let pageCache = {};  // 内存缓存已加载的页文件
+        const pageSize = 24; 
+        let pageCache = {};  
+        
+        let globalSearchIndex = null; // 全站搜索轻量索引缓存
         let searchKeyword = '';
 
         async function initSite() {
@@ -189,6 +191,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const targetCat = urlParams.get('cat');
             const targetPage = parseInt(urlParams.get('page')) || 1;
+            const targetQuery = urlParams.get('q');
 
             try {
                 const res = await fetch('data/categories.json');
@@ -203,7 +206,7 @@
 
                 let latestMeta = catIndex.find(c => c.name === '🔥 Latest Releases') || { name: '🔥 Latest Releases', count: 120, files: [] };
 
-                let html = `<a href="index.html" class="nav-item ${!targetCat ? 'active' : ''}" onclick="switchCategory('🔥 Latest Releases', 1, this); return false;">🔥 最新发布</a>`;
+                let html = `<a href="index.html" class="nav-item ${!targetCat && !targetQuery ? 'active' : ''}" onclick="switchCategory('🔥 Latest Releases', 1, this); return false;">🔥 最新发布</a>`;
                 
                 html += validCats.map(c => {
                     const isActive = targetCat === c.name ? 'active' : '';
@@ -211,6 +214,17 @@
                 }).join('');
 
                 navGrid.innerHTML = html;
+
+                // 如果 URL 中带有搜索参数 ?q=xxx
+                if (targetQuery) {
+                    document.getElementById('searchInput').value = targetQuery;
+                    searchKeyword = targetQuery.trim().toLowerCase();
+                    document.getElementById('sectionTitle').innerText = `🔍 全站搜索: "${targetQuery}"`;
+                    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                    currentPage = targetPage;
+                    await loadGlobalSearchResults();
+                    return;
+                }
 
                 let activeMeta = latestMeta;
                 if (targetCat) {
@@ -251,12 +265,13 @@
         }
 
         function updateUrlState() {
-            const catName = currentCategoryMeta.name;
             let newUrl = 'index.html';
             const params = [];
 
-            if (catName !== '🔥 Latest Releases') {
-                params.push(`cat=${encodeURIComponent(catName)}`);
+            if (searchKeyword) {
+                params.push(`q=${encodeURIComponent(searchKeyword)}`);
+            } else if (currentCategoryMeta && currentCategoryMeta.name !== '🔥 Latest Releases') {
+                params.push(`cat=${encodeURIComponent(currentCategoryMeta.name)}`);
             }
             if (currentPage > 1) {
                 params.push(`page=${currentPage}`);
@@ -267,8 +282,45 @@
             window.history.pushState({}, '', newUrl);
         }
 
-        // 🚀 精准按页加载（每一个文件对应一页 24 条数据）
+        // 🚀 高性能全站全局搜索核心函数
+        async function loadGlobalSearchResults() {
+            const grid = document.getElementById('videoGrid');
+            const paginationBar = document.getElementById('paginationBar');
+            grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">正在全局搜索...</div>';
+            paginationBar.style.display = 'none';
+
+            try {
+                // 异步加载轻量级全站搜索索引（仅首次加载，之后缓存在内存中，速度极快）
+                if (!globalSearchIndex) {
+                    const res = await fetch('data/search_index.json');
+                    globalSearchIndex = await res.json();
+                }
+
+                // 全站模糊匹配
+                const matchedList = globalSearchIndex.filter(v => v.title.toLowerCase().includes(searchKeyword));
+                const totalPages = Math.ceil(matchedList.length / pageSize) || 1;
+                
+                if (currentPage > totalPages) currentPage = totalPages;
+                if (currentPage < 1) currentPage = 1;
+
+                const start = (currentPage - 1) * pageSize;
+                const pageItems = matchedList.slice(start, start + pageSize);
+
+                document.getElementById('totalBadge').innerText = `全站找到 ${matchedList.length} 部相关影片`;
+                renderGrid(pageItems, totalPages);
+            } catch (e) {
+                console.error("全局搜索失败", e);
+                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">搜索索引加载失败，请确认已运行最新采集脚本。</div>';
+            }
+        }
+
         async function loadPageData() {
+            // 如果处于搜索状态，走全局搜索逻辑
+            if (searchKeyword) {
+                await loadGlobalSearchResults();
+                return;
+            }
+
             const grid = document.getElementById('videoGrid');
             const paginationBar = document.getElementById('paginationBar');
             grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">正在加载...</div>';
@@ -293,7 +345,6 @@
                 if (currentPage > totalPages) currentPage = totalPages;
                 if (currentPage < 1) currentPage = 1;
 
-                // 核心修复：files 数组中第 N 个文件直接对应第 N 页
                 const targetFile = files[currentPage - 1] || files[files.length - 1];
                 const cacheKey = `${currentCategoryMeta.name}_p${currentPage}`;
 
@@ -304,11 +355,6 @@
                     const res = await fetch(`data/${targetFile}`);
                     pageItems = await res.json();
                     pageCache[cacheKey] = pageItems;
-                }
-
-                // 如果有搜索关键词，对当前页进行过滤
-                if (searchKeyword) {
-                    pageItems = pageItems.filter(v => v.title.toLowerCase().includes(searchKeyword));
                 }
 
                 renderGrid(pageItems, totalPages);
@@ -359,12 +405,27 @@
 
         function changePage(step) {
             currentPage += step;
-            loadPageData();
+            if (searchKeyword) {
+                loadGlobalSearchResults();
+            } else {
+                loadPageData();
+            }
         }
 
         function handleSearch() {
-            searchKeyword = document.getElementById('searchInput').value.trim().toLowerCase();
-            loadPageData();
+            const val = document.getElementById('searchInput').value.trim();
+            searchKeyword = val.toLowerCase();
+            currentPage = 1;
+
+            if (searchKeyword) {
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                document.getElementById('sectionTitle').innerText = `🔍 全站搜索: "${val}"`;
+                loadGlobalSearchResults();
+            } else {
+                // 清空搜索框时恢复到默认“最新发布”
+                const firstNav = document.querySelector('.nav-item');
+                if (firstNav) firstNav.click();
+            }
         }
 
         initSite();
