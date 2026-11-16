@@ -3,188 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamVault - Player</title>
+    <title>StreamVault - Video Hub</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: #121212; color: #e0e0e0; font-family: Arial, sans-serif; }
-        header { background: #1f1f1f; padding: 12px 15px; display: flex; align-items: center; border-bottom: 1px solid #333; }
-        .back-btn { color: #ff4757; text-decoration: none; font-size: 14px; margin-right: 15px; white-space: nowrap; }
-        header h1 { color: #fff; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .container { max-width: 1000px; margin: 15px auto; padding: 0 10px; }
+        header { background: #1f1f1f; padding: 12px 15px; text-align: center; border-bottom: 1px solid #333; }
+        header h1 { color: #ff4757; font-size: 20px; letter-spacing: 1px; }
+        .container { max-width: 1200px; margin: 10px auto; padding: 0 8px; }
         
-        /* 播放页固定显示的紧凑分类导航栏（直接写死，确保 100% 显示） */
-        .nav-wrapper { background: #181818; padding: 6px; border: 1px solid #2c2c2c; border-radius: 6px; margin-bottom: 12px; }
+        /* 3行横向滑动导航 */
+        .nav-wrapper { background: #181818; padding: 8px; border: 1px solid #2c2c2c; border-radius: 6px; margin-bottom: 14px; }
         .nav-grid {
             display: grid;
-            grid-template-rows: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
             grid-auto-flow: column;
             grid-auto-columns: max-content;
-            gap: 5px;
+            gap: 6px;
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
         }
         .nav-grid::-webkit-scrollbar { display: none; }
         .nav-item {
-            background: #242424; padding: 4px 10px; text-align: center; color: #d0d0d0;
-            text-decoration: none; font-size: 11px; border-radius: 3px; border: 1px solid #303030; white-space: nowrap;
+            background: #242424; padding: 6px 12px; text-align: center; color: #d0d0d0;
+            text-decoration: none; font-size: 12px; line-height: 1.2; border-radius: 4px;
+            border: 1px solid #303030; white-space: nowrap; transition: 0.15s;
         }
-        .nav-item:hover { background: #ff4757; color: #fff; border-color: #ff6b81; }
+        .nav-item:hover, .nav-item.active { background: #ff4757; color: #fff; border-color: #ff6b81; font-weight: bold; }
 
-        .player-container {
-            position: relative; width: 100%; padding-top: 56.25%; background: #000;
-            border-radius: 6px; overflow: hidden; border: 1px solid #333;
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .section-title { font-size: 15px; border-left: 3px solid #ff4757; padding-left: 8px; color: #fff; }
+        
+        /* 视频网格 */
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 8px; }
+        .video-card { background: #1e1e1e; border-radius: 5px; overflow: hidden; border: 1px solid #2d2d2d; text-decoration: none; color: inherit; display: block; transition: transform 0.2s; }
+        .video-card:hover { transform: translateY(-2px); border-color: #555; }
+        .video-thumb { width: 100%; height: 105px; background: #2a2a2a; object-fit: cover; }
+        .video-info { padding: 7px; }
+        .video-title { font-size: 12px; color: #fff; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .video-meta { font-size: 11px; color: #888; display: flex; justify-content: space-between; }
+
+        /* 分页控件样式 */
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 20px 0; }
+        .page-btn { background: #222; color: #ccc; border: 1px solid #444; padding: 6px 14px; font-size: 12px; border-radius: 4px; cursor: pointer; }
+        .page-btn:hover:not(:disabled) { background: #ff4757; color: #fff; border-color: #ff6b81; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .page-info { font-size: 12px; color: #888; }
+
+        @media (min-width: 900px) {
+            .nav-grid { grid-template-rows: none; grid-auto-flow: row; grid-template-columns: repeat(10, 1fr); overflow-x: visible; }
+            .video-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
+            .video-thumb { height: 135px; }
+            .video-title { font-size: 13px; }
         }
-        .player-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-
-        .episodes-section { margin-top: 15px; background: #1a1a1a; padding: 12px; border-radius: 6px; border: 1px solid #333; }
-        .episodes-title { font-size: 13px; color: #aaa; margin-bottom: 8px; font-weight: bold; }
-        .episodes-grid { display: flex; flex-wrap: wrap; gap: 6px; max-height: 140px; overflow-y: auto; }
-        .ep-btn { background: #222; color: #ccc; border: 1px solid #333; padding: 6px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; text-decoration: none; }
-        .ep-btn:hover, .ep-btn.active { background: #ff4757; color: #fff; border-color: #ff6b81; }
-
-        .video-details { margin-top: 15px; background: #1a1a1a; padding: 15px; border-radius: 6px; border: 1px solid #333; }
-        .video-details h2 { font-size: 18px; color: #fff; margin-bottom: 8px; }
-        .video-details p { color: #aaa; font-size: 13px; line-height: 1.4; margin-top: 6px; }
-        .meta-info { font-size: 11px; color: #888; margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
     <header>
-        <a href="index.html" class="back-btn">&#8592; Back</a>
-        <h1 id="pageTitle">StreamVault Player</h1>
+        <h1>STREAMVAULT</h1>
     </header>
 
     <div class="container">
-        <!-- 播放页顶部的分类导航（直接硬编码，确保即开即现） -->
+        <!-- 分类导航栏 -->
         <div class="nav-wrapper">
-            <nav class="nav-grid">
-                <a href="index.html" class="nav-item">🔥 Latest</a>
-                <a href="index.html" class="nav-item">精品推荐</a>
-                <a href="index.html" class="nav-item">主播秀色</a>
-                <a href="index.html" class="nav-item">日本有码</a>
-                <a href="index.html" class="nav-item">日本无码</a>
-                <a href="index.html" class="nav-item">中文字幕</a>
-                <a href="index.html" class="nav-item">童颜巨乳</a>
-                <a href="index.html" class="nav-item">性感人妻</a>
-                <a href="index.html" class="nav-item">强奸乱伦</a>
-                <a href="index.html" class="nav-item">欧美情色</a>
-                <a href="index.html" class="nav-item">三级伦理</a>
-                <a href="index.html" class="nav-item">卡通动漫</a>
-                <a href="index.html" class="nav-item">丝袜OL</a>
-                <a href="index.html" class="nav-item">自拍偷拍</a>
-                <a href="index.html" class="nav-item">日本片商</a>
-                <a href="index.html" class="nav-item">剧情介绍</a>
-                <a href="index.html" class="nav-item">网曝系列</a>
-                <a href="index.html" class="nav-item">同性恋</a>
-                <a href="index.html" class="nav-item">探花嫖娼</a>
-                <a href="index.html" class="nav-item">国产人妻</a>
-                <a href="index.html" class="nav-item">国产SM</a>
-                <a href="index.html" class="nav-item">国产丝袜</a>
-                <a href="index.html" class="nav-item">麻豆传媒</a>
-                <a href="index.html" class="nav-item">国产乱伦</a>
-                <a href="index.html" class="nav-item">明星换脸</a>
-                <a href="index.html" class="nav-item">主奴调教</a>
-                <a href="index.html" class="nav-item">凌辱快感</a>
-                <a href="index.html" class="nav-item">多人群交</a>
-                <a href="index.html" class="nav-item">角色剧情</a>
-                <a href="index.html" class="nav-item">港台辣妹</a>
-                <a href="index.html" class="nav-item">重口性癖</a>
-                <a href="index.html" class="nav-item">变性伪娘</a>
-                <a href="index.html" class="nav-item">VR视角</a>
-            </nav>
+            <nav class="nav-grid" id="navGrid"></nav>
         </div>
 
-        <div class="player-container">
-            <iframe id="playerFrame" allowfullscreen></iframe>
-        </div>
-
-        <div class="episodes-section" id="episodesSection" style="display: none;">
-            <div class="episodes-title">Episodes / Sources:</div>
-            <div class="episodes-grid" id="episodesGrid"></div>
-        </div>
-
-        <div class="video-details">
-            <h2 id="videoTitle">Loading title...</h2>
-            <div class="meta-info" id="videoMeta"></div>
-            <p id="videoDesc"></p>
-        </div>
+        <section>
+            <div class="section-header">
+                <div class="section-title" id="sectionTitle">🔥 Latest Releases</div>
+            </div>
+            <!-- 视频列表网格 -->
+            <div class="video-grid" id="videoGrid"></div>
+            
+            <!-- 分页栏 -->
+            <div class="pagination" id="paginationBar" style="display: none;">
+                <button class="page-btn" id="prevBtn" onclick="changePage(-1)">Previous</button>
+                <span class="page-info" id="pageInfo">Page 1 / 1</span>
+                <button class="page-btn" id="nextBtn" onclick="changePage(1)">Next</button>
+            </div>
+        </section>
     </div>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const videoId = urlParams.get('id');
-        const PLAYER_PREFIX = "https://yutujx.com/?url=";[span_1](start_span)[span_1](end_span)
+        let currentVideos = [];
+        let currentPage = 1;
+        const pageSize = 24; // 每页显示 24 个视频
 
-        function cleanHtmlTags(str) {
-            if (!str) return "No description available.";
-            return str.replace(/<[^>]+>/g, '').trim();
+        async function initNav() {
+            const navGrid = document.getElementById('navGrid');
+            try {
+                const res = await fetch('data/categories.json');
+                const catIndex = await res.json();
+                
+                let html = `<a href="#" class="nav-item active" onclick="loadCategory('cat_latest.json', '🔥 Latest Releases', this)">🔥 Latest</a>`;
+                html += catIndex.filter(c => c.name !== '🔥 Latest Releases').map(c => {
+                    const fileRef = c.file || (c.files ? c.files.join(',') : '');
+                    return `<a href="#" class="nav-item" onclick="loadCategory('${fileRef}', '${c.name}', this)" title="${c.name}">${c.name} (${c.count})</a>`;
+                }).join('');
+                navGrid.innerHTML = html;
+            } catch (e) {
+                console.error("加载导航失败", e);
+                navGrid.innerHTML = '<span style="color:#888;font-size:12px;padding:6px;">Failed to load categories. Please check data/categories.json</span>';
+            }
         }
 
-        async function loadVideoDetail() {
-            if (!videoId) {
-                document.getElementById('videoTitle').innerText = "Error: No video ID provided.";
+        async function loadCategory(fileRef, title, element) {
+            if (element) {
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                element.classList.add('active');
+            }
+            document.getElementById('sectionTitle').innerText = title;
+            currentPage = 1;
+            
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">Loading...</div>';
+            document.getElementById('paginationBar').style.display = 'none';
+
+            try {
+                let allVideos = [];
+                if (fileRef.includes(',')) {
+                    const files = fileRef.split(',');
+                    for (let f of files) {
+                        const r = await fetch(`data/${f.trim()}`);
+                        const chunk = await r.json();
+                        allVideos = allVideos.concat(chunk);
+                    }
+                } else {
+                    const r = await fetch(`data/${fileRef}`);
+                    allVideos = await r.json();
+                }
+
+                currentVideos = allVideos;
+                renderPage();
+            } catch (e) {
+                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">No data available for this category yet. Run update_data.py to generate data.</div>';
+            }
+        }
+
+        function renderPage() {
+            const grid = document.getElementById('videoGrid');
+            const paginationBar = document.getElementById('paginationBar');
+
+            if (currentVideos.length === 0) {
+                grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 30px;">No videos found in this category.</div>';
+                paginationBar.style.display = 'none';
                 return;
             }
 
-            try {
-                const lookupRes = await fetch('data/vod_lookup.json');
-                const vodLookup = await lookupRes.json();
-                const dataFile = vodLookup[videoId];
+            const totalPages = Math.ceil(currentVideos.length / pageSize);
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
 
-                if (!dataFile) {
-                    document.getElementById('videoTitle').innerText = "Video not found in local cache.";
-                    return;
-                }
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageItems = currentVideos.slice(start, end);
 
-                const chunkRes = await fetch(`data/${dataFile}`);
-                const chunkData = await chunkRes.json();
-                const video = chunkData.find(v => String(v.id) === String(videoId));
+            grid.innerHTML = pageItems.map(v => `
+                <a href="play.html?id=${v.id}" class="video-card">
+                    <img src="${v.pic || 'https://via.placeholder.com/300x180?text=No+Image'}" class="video-thumb" alt="thumb" loading="lazy">
+                    <div class="video-info">
+                        <div class="video-title">${v.title}</div>
+                        <div class="video-meta">
+                            <span>${v.year || '2026'}</span>
+                            <span>HD</span>
+                        </div>
+                    </div>
+                </a>
+            `).join('');
 
-                if (!video) {
-                    document.getElementById('videoTitle').innerText = "Video details not found.";
-                    return;
-                }
-
-                document.getElementById('videoTitle').innerText = video.title;
-                document.getElementById('pageTitle').innerText = video.title;
-                document.getElementById('videoMeta').innerText = `Category: ${video.category} | Year: ${video.year || 'N/A'} | Area: ${video.area || 'N/A'}`;
-                
-                const cleanDesc = cleanHtmlTags(video.content);
-                document.getElementById('videoDesc').innerText = cleanDesc ? `Description: ${cleanDesc}` : "No description available.";
-
-                const episodes = video.episodes || [];
-                if (episodes.length > 0) {
-                    const epSection = document.getElementById('episodesSection');
-                    const epGrid = document.getElementById('episodesGrid');
-                    epSection.style.display = 'block';
-
-                    epGrid.innerHTML = episodes.map((ep, idx) => `
-                        <button class="ep-btn ${idx === 0 ? 'active' : ''}" onclick="playEpisode('${ep.url}', this)">
-                            ${ep.name || `Episode ${idx + 1}`}
-                        </button>
-                    `).join('');
-
-                    playEpisode(episodes[0].url);
-                } else {
-                    document.getElementById('playerFrame').srcdoc = '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100%;font-family:sans-serif;">No valid playback source found.</div>';
-                }
-
-            } catch (e) {
-                console.error("Failed to load video details:", e);
-                document.getElementById('videoTitle').innerText = "Failed to load video data.";
+            if (totalPages > 1) {
+                paginationBar.style.display = 'flex';
+                document.getElementById('pageInfo').innerText = `Page ${currentPage} / ${totalPages} (Total ${currentVideos.length})`;
+                document.getElementById('prevBtn').disabled = (currentPage === 1);
+                document.getElementById('nextBtn').disabled = (currentPage === totalPages);
+            } else {
+                paginationBar.style.display = 'none';
             }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function playEpisode(url, buttonElement) {
-            if (buttonElement) {
-                document.querySelectorAll('.ep-btn').forEach(btn => btn.classList.remove('active'));
-                buttonElement.classList.add('active');
-            }
-            document.getElementById('playerFrame').src = PLAYER_PREFIX + url;
+        function changePage(direction) {
+            currentPage += direction;
+            renderPage();
         }
 
-        loadVideoDetail();
+        // 初始化加载导航并默认打开 Latest
+        initNav();
+        loadCategory('cat_latest.json', '🔥 Latest Releases');
     </script>
 </body>
 </html>
