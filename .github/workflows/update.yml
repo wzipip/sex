@@ -28,5 +28,6 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add data/ sitemap.xml sitemaps/
+          # 修正这里：只 add 实际存在的 data/ 目录
+          git add data/
           git diff --quiet && git diff --cached --quiet || (git commit -m "Automated update (Daily Top 10 Pages): $(date -u +'%Y-%m-%d %H:%M:%S')" && git push)
