@@ -180,8 +180,9 @@
         let categoriesList = [];
         let currentCategoryMeta = null; 
         let currentPage = 1;
-        const pageSize = 24;
-        let categoryItemsCache = {}; 
+        const pageSize = 24; // 每页 24 条
+        const chunkSize = 100; // 每个分片文件存储 100 条
+        let chunkCache = {}; // 内存缓存已加载的分片，第二次点击直接秒开
         let searchKeyword = '';
 
         async function initSite() {
@@ -212,7 +213,6 @@
 
                 navGrid.innerHTML = html;
 
-                // 确定目标分类
                 let activeMeta = latestMeta;
                 if (targetCat) {
                     const matched = catIndex.find(c => c.name === targetCat);
@@ -220,17 +220,16 @@
                 }
 
                 currentPage = targetPage;
+                currentCategoryMeta = activeMeta;
+
                 const activeEl = targetCat ? document.querySelector(`[data-cat="${targetCat}"]`) : navGrid.querySelector('a');
-                
                 if (activeEl) {
                     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
                     activeEl.classList.add('active');
                 }
 
-                currentCategoryMeta = activeMeta;
                 document.getElementById('sectionTitle').innerText = activeMeta.name.replace('🔥 Latest Releases', '🔥 最新发布');
-                
-                await loadCategoryData();
+                await loadPageData();
             } catch (e) {
                 console.error("初始化导航失败", e);
                 navGrid.innerHTML = '<div style="color:#888;font-size:12px;padding:6px;">暂无分类数据，请运行采集脚本。</div>';
@@ -249,7 +248,7 @@
             document.getElementById('sectionTitle').innerText = matchedMeta.name.replace('🔥 Latest Releases', '🔥 最新发布');
 
             updateUrlState();
-            await loadCategoryData();
+            await loadPageData();
         }
 
         function updateUrlState() {
@@ -269,65 +268,74 @@
             window.history.pushState({}, '', newUrl);
         }
 
-        async function loadCategoryData() {
+        // 🚀 核心优化：按需懒加载（只请求当前页所在的那个分片文件，极大减少网络开销）
+        async function loadPageData() {
             const grid = document.getElementById('videoGrid');
             const paginationBar = document.getElementById('paginationBar');
             grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">正在加载...</div>';
             paginationBar.style.display = 'none';
 
             try {
-                const catKey = currentCategoryMeta.name;
-                let files = currentCategoryMeta.files || (currentCategoryMeta.file ? [currentCategoryMeta.file] : []);
+                const totalCount = currentCategoryMeta.count || 0;
+                document.getElementById('totalBadge').innerText = `共 ${totalCount} 部`;
 
-                if (files.length === 0) {
+                if (totalCount === 0) {
                     grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">该分类暂无影片</div>';
                     return;
                 }
 
-                if (!categoryItemsCache[catKey]) {
-                    const promises = files.map(f => fetch(`data/${f}`).then(r => r.json()).catch(() => []));
-                    const results = await Promise.all(promises);
-                    let allItems = [];
-                    results.forEach(chunk => {
-                        if (Array.isArray(chunk)) allItems = allItems.concat(chunk);
-                    });
-                    categoryItemsCache[catKey] = allItems;
+                let files = currentCategoryMeta.files || (currentCategoryMeta.file ? [currentCategoryMeta.file] : []);
+                if (files.length === 0) {
+                    grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">暂无数据源文件</div>';
+                    return;
                 }
 
-                renderPage();
+                // 计算当前页落在哪个分片上（每个分片 100 条）
+                const startIndex = (currentPage - 1) * pageSize;
+                const chunkIndex = Math.floor(startIndex / chunkSize);
+                const targetFile = files[chunkIndex] || files[0];
+
+                // 异步请求当前分片（带内存缓存，第二次翻回该页零延迟秒开）
+                let chunkData = [];
+                if (chunkCache[targetFile]) {
+                    chunkData = chunkCache[targetFile];
+                } else {
+                    const res = await fetch(`data/${targetFile}`);
+                    chunkData = await res.json();
+                    chunkCache[targetFile] = chunkData;
+                }
+
+                // 过滤搜索关键字
+                let targetList = chunkData;
+                if (searchKeyword) {
+                    targetList = chunkData.filter(v => v.title.toLowerCase().includes(searchKeyword));
+                }
+
+                const totalPages = Math.ceil(totalCount / pageSize);
+                if (currentPage > totalPages) currentPage = totalPages;
+                if (currentPage < 1) currentPage = 1;
+
+                const localStart = startIndex % chunkSize;
+                const pageItems = targetList.slice(localStart, localStart + pageSize);
+
+                renderGrid(pageItems, totalPages);
             } catch (e) {
                 console.error("加载数据失败", e);
                 grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">数据加载失败</div>';
             }
         }
 
-        function renderPage() {
+        function renderGrid(items, totalPages) {
             const grid = document.getElementById('videoGrid');
             const paginationBar = document.getElementById('paginationBar');
-            const catKey = currentCategoryMeta.name;
-            const allItems = categoryItemsCache[catKey] || [];
 
-            let targetList = allItems;
-            if (searchKeyword) {
-                targetList = allItems.filter(v => v.title.toLowerCase().includes(searchKeyword));
-            }
-
-            document.getElementById('totalBadge').innerText = `共 ${targetList.length} 部`;
-
-            if (targetList.length === 0) {
+            if (items.length === 0) {
                 grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">没有找到相关影片</div>';
                 paginationBar.style.display = 'none';
                 return;
             }
 
-            const totalPages = Math.ceil(targetList.length / pageSize);
-            if (currentPage > totalPages) currentPage = totalPages;
-            if (currentPage < 1) currentPage = 1;
-
-            const start = (currentPage - 1) * pageSize;
-            const pageItems = targetList.slice(start, start + pageSize);
-
-            grid.innerHTML = pageItems.map(v => `
+            grid.innerHTML = items.map(v => `
                 <a href="play.html?id=${v.id}" class="video-card">
                     <div class="thumb-wrap">
                         <img src="${v.pic || 'https://via.placeholder.com/300x180?text=No+Image'}" class="video-thumb" alt="${v.title}" loading="lazy">
@@ -351,20 +359,20 @@
             } else {
                 paginationBar.style.display = 'none';
             }
-            
+
             updateUrlState();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function changePage(step) {
             currentPage += step;
-            renderPage();
+            loadPageData();
         }
 
         function handleSearch() {
             searchKeyword = document.getElementById('searchInput').value.trim().toLowerCase();
             currentPage = 1;
-            renderPage();
+            loadPageData();
         }
 
         initSite();
