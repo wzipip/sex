@@ -149,7 +149,7 @@
                 <span>STREAMVAULT</span>
             </a>
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="搜索当前分类..." oninput="handleSearch()">
+                <input type="text" id="searchInput" placeholder="搜索当前页..." oninput="handleSearch()">
             </div>
         </div>
     </header>
@@ -180,9 +180,8 @@
         let categoriesList = [];
         let currentCategoryMeta = null; 
         let currentPage = 1;
-        const pageSize = 24; // 每页 24 条
-        const chunkSize = 100; // 每个分片文件存储 100 条
-        let chunkCache = {}; // 内存缓存已加载的分片，第二次点击直接秒开
+        const pageSize = 24; // 每页 24 条，正好对应 Python 生成的每页文件
+        let pageCache = {};  // 内存缓存已加载的页文件
         let searchKeyword = '';
 
         async function initSite() {
@@ -268,7 +267,7 @@
             window.history.pushState({}, '', newUrl);
         }
 
-        // 🚀 核心优化：按需懒加载（只请求当前页所在的那个分片文件，极大减少网络开销）
+        // 🚀 精准按页加载（每一个文件对应一页 24 条数据）
         async function loadPageData() {
             const grid = document.getElementById('videoGrid');
             const paginationBar = document.getElementById('paginationBar');
@@ -290,33 +289,27 @@
                     return;
                 }
 
-                // 计算当前页落在哪个分片上（每个分片 100 条）
-                const startIndex = (currentPage - 1) * pageSize;
-                const chunkIndex = Math.floor(startIndex / chunkSize);
-                const targetFile = files[chunkIndex] || files[0];
-
-                // 异步请求当前分片（带内存缓存，第二次翻回该页零延迟秒开）
-                let chunkData = [];
-                if (chunkCache[targetFile]) {
-                    chunkData = chunkCache[targetFile];
-                } else {
-                    const res = await fetch(`data/${targetFile}`);
-                    chunkData = await res.json();
-                    chunkCache[targetFile] = chunkData;
-                }
-
-                // 过滤搜索关键字
-                let targetList = chunkData;
-                if (searchKeyword) {
-                    targetList = chunkData.filter(v => v.title.toLowerCase().includes(searchKeyword));
-                }
-
                 const totalPages = Math.ceil(totalCount / pageSize);
                 if (currentPage > totalPages) currentPage = totalPages;
                 if (currentPage < 1) currentPage = 1;
 
-                const localStart = startIndex % chunkSize;
-                const pageItems = targetList.slice(localStart, localStart + pageSize);
+                // 核心修复：files 数组中第 N 个文件直接对应第 N 页
+                const targetFile = files[currentPage - 1] || files[files.length - 1];
+                const cacheKey = `${currentCategoryMeta.name}_p${currentPage}`;
+
+                let pageItems = [];
+                if (pageCache[cacheKey]) {
+                    pageItems = pageCache[cacheKey];
+                } else {
+                    const res = await fetch(`data/${targetFile}`);
+                    pageItems = await res.json();
+                    pageCache[cacheKey] = pageItems;
+                }
+
+                // 如果有搜索关键词，对当前页进行过滤
+                if (searchKeyword) {
+                    pageItems = pageItems.filter(v => v.title.toLowerCase().includes(searchKeyword));
+                }
 
                 renderGrid(pageItems, totalPages);
             } catch (e) {
@@ -371,7 +364,6 @@
 
         function handleSearch() {
             searchKeyword = document.getElementById('searchInput').value.trim().toLowerCase();
-            currentPage = 1;
             loadPageData();
         }
 
