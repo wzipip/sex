@@ -1,90 +1,143 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamVault - Player</title>
+    <title>正在播放 - StreamVault</title>
     <style>
+        :root {
+            --bg-main: #0f1014;
+            --bg-card: #181a20;
+            --bg-nav: #14151a;
+            --accent: #ff3b5c;
+            --text-primary: #f5f5f7;
+            --text-muted: #8e929f;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background-color: #121212; color: #e0e0e0; font-family: Arial, sans-serif; }
-        
-        /* 统一网站头部 */
-        header { background: #1f1f1f; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; }
-        .logo { color: #ff4757; font-size: 18px; font-weight: bold; text-decoration: none; letter-spacing: 1px; }
-        .back-btn { color: #ccc; text-decoration: none; font-size: 13px; background: #2a2a2a; padding: 4px 10px; border-radius: 4px; border: 1px solid #3d3d3d; }
-        .back-btn:hover { background: #ff4757; color: #fff; }
+        body { background-color: var(--bg-main); color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
-        .container { max-width: 1000px; margin: 15px auto; padding: 0 10px; }
-        
-        /* 播放页分类导航栏：手机版 6 行，电脑版 4 行 */
-        .nav-wrapper { background: #181818; padding: 8px; border: 1px solid #2c2c2c; border-radius: 6px; margin-bottom: 12px; }
+        /* 与首页完全统一的吸顶头部 */
+        .site-header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(20, 21, 26, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 16px;
+        }
+        .header-inner {
+            max-width: 1240px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .brand {
+            display: flex; align-items: center; gap: 8px;
+            text-decoration: none; color: #fff; font-size: 19px; font-weight: 800; letter-spacing: 0.5px;
+        }
+        .brand-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: var(--accent); box-shadow: 0 0 10px var(--accent);
+        }
+        .back-home {
+            color: #d0d4de; text-decoration: none; font-size: 12px; font-weight: 600;
+            background: #22252e; padding: 6px 12px; border-radius: 6px;
+            border: 1px solid var(--border-color); transition: 0.18s;
+        }
+        .back-home:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        .container { max-width: 1100px; margin: 14px auto; padding: 0 12px; }
+
+        /* 与首页完全一致的整齐网格导航 */
+        .nav-panel {
+            background: var(--bg-nav); border: 1px solid var(--border-color);
+            border-radius: 10px; padding: 10px; margin-bottom: 16px;
+        }
         .nav-grid {
             display: grid;
-            grid-template-rows: repeat(6, 1fr);
-            grid-auto-flow: column;
-            grid-auto-columns: max-content;
-            gap: 5px;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
+            grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+            gap: 6px;
         }
-        .nav-grid::-webkit-scrollbar { display: none; }
         .nav-item {
-            background: #242424; padding: 5px 10px; text-align: center; color: #d0d0d0;
-            text-decoration: none; font-size: 11px; line-height: 1.2; border-radius: 4px;
-            border: 1px solid #303030; white-space: nowrap; transition: 0.15s;
+            display: flex; align-items: center; justify-content: center;
+            background: #1e2028; color: #c8ccd6;
+            text-decoration: none; font-size: 12px; font-weight: 500;
+            padding: 7px 6px; border-radius: 6px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            transition: all 0.18s ease;
         }
-        .nav-item:hover { background: #ff4757; color: #fff; border-color: #ff6b81; font-weight: bold; }
+        .nav-item:hover { background: var(--accent); color: #fff; font-weight: 600; }
 
-        .player-container {
-            position: relative; width: 100%; padding-top: 56.25%; background: #000;
-            border-radius: 6px; overflow: hidden; border: 1px solid #333;
+        /* 播放器容器 */
+        .player-box {
+            position: relative; width: 100%; padding-top: 56.25%;
+            background: #000; border-radius: 10px; overflow: hidden;
+            border: 1px solid var(--border-color); box-shadow: 0 8px 30px rgba(0,0,0,0.45);
         }
-        .player-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        .player-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
-        .episodes-section { margin-top: 15px; background: #1a1a1a; padding: 12px; border-radius: 6px; border: 1px solid #333; }
-        .episodes-title { font-size: 13px; color: #aaa; margin-bottom: 8px; font-weight: bold; }
-        .episodes-grid { display: flex; flex-wrap: wrap; gap: 6px; max-height: 140px; overflow-y: auto; }
-        .ep-btn { background: #222; color: #ccc; border: 1px solid #333; padding: 6px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; text-decoration: none; }
-        .ep-btn:hover, .ep-btn.active { background: #ff4757; color: #fff; border-color: #ff6b81; }
+        /* 选集面板 */
+        .episodes-card {
+            margin-top: 16px; background: var(--bg-card); padding: 14px;
+            border-radius: 10px; border: 1px solid var(--border-color);
+        }
+        .card-label { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+        .episodes-grid { display: flex; flex-wrap: wrap; gap: 8px; max-height: 160px; overflow-y: auto; }
+        .ep-btn {
+            background: #22252e; color: #ccc; border: 1px solid var(--border-color);
+            padding: 6px 12px; font-size: 12px; border-radius: 6px; cursor: pointer; transition: 0.15s;
+        }
+        .ep-btn:hover, .ep-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
 
-        .video-details { margin-top: 15px; background: #1a1a1a; padding: 15px; border-radius: 6px; border: 1px solid #333; }
-        .video-details h2 { font-size: 18px; color: #fff; margin-bottom: 8px; }
-        .video-details p { color: #aaa; font-size: 13px; line-height: 1.4; margin-top: 6px; }
-        .meta-info { font-size: 11px; color: #888; margin-bottom: 8px; }
+        /* 影片详情卡片 */
+        .detail-card {
+            margin-top: 16px; margin-bottom: 30px; background: var(--bg-card);
+            padding: 16px; border-radius: 10px; border: 1px solid var(--border-color);
+        }
+        .detail-card h1 { font-size: 18px; color: #fff; margin-bottom: 8px; }
+        .meta-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .tag {
+            background: #22252e; color: var(--text-muted); font-size: 11px;
+            padding: 3px 8px; border-radius: 4px;
+        }
+        .desc-text { color: #b0b4c0; font-size: 13px; line-height: 1.6; }
 
-        /* 电脑端响应式：改成 4 行 */
-        @media (min-width: 900px) {
-            .nav-grid { grid-template-rows: repeat(4, 1fr); }
+        @media (min-width: 768px) {
+            .nav-grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 8px; }
+            .nav-item { font-size: 13px; padding: 8px 10px; }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <a href="index.html" class="logo">STREAMVAULT</a>
-        <a href="index.html" class="back-btn">&#8592; Back to Home</a>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="brand">
+                <span class="brand-dot"></span>
+                <span>STREAMVAULT</span>
+            </a>
+            <a href="index.html" class="back-home">返回首页</a>
+        </div>
     </header>
 
     <div class="container">
-        <!-- 播放页同步显示分类导航 -->
-        <div class="nav-wrapper">
+        <!-- 播放页同步导航：点击任意分类直接跳转到首页对应分类 -->
+        <div class="nav-panel">
             <nav class="nav-grid" id="navGrid"></nav>
         </div>
 
-        <div class="player-container">
+        <div class="player-box">
             <iframe id="playerFrame" allowfullscreen></iframe>
         </div>
 
-        <div class="episodes-section" id="episodesSection" style="display: none;">
-            <div class="episodes-title">Episodes / Sources:</div>
+        <div class="episodes-card" id="episodesSection" style="display: none;">
+            <div class="card-label">播放选集</div>
             <div class="episodes-grid" id="episodesGrid"></div>
         </div>
 
-        <div class="video-details">
-            <h2 id="videoTitle">Loading title...</h2>
-            <div class="meta-info" id="videoMeta"></div>
-            <p id="videoDesc"></p>
+        <div class="detail-card">
+            <h1 id="videoTitle">正在加载影片信息...</h1>
+            <div class="meta-tags" id="videoMeta"></div>
+            <p class="desc-text" id="videoDesc"></p>
         </div>
     </div>
 
@@ -93,16 +146,21 @@
         const videoId = urlParams.get('id');
         const PLAYER_PREFIX = "https://yutujx.com/?url=";
 
-        // 异步加载与首页完全一致的分类导航
         async function initPlayerNav() {
             const navGrid = document.getElementById('navGrid');
             try {
                 const res = await fetch('data/categories.json');
                 const catIndex = await res.json();
                 
-                let html = `<a href="index.html" class="nav-item">🔥 Latest</a>`;
-                html += catIndex.filter(c => c.name !== '🔥 Latest Releases').map(c => 
-                    `<a href="index.html" class="nav-item" title="${c.name}">${c.name}</a>`
+                const validCats = catIndex.filter(c => 
+                    c.name !== '🔥 Latest Releases' && 
+                    c.name !== 'Uncategorized' && 
+                    Number(c.count) > 0
+                );
+
+                let html = `<a href="index.html" class="nav-item">🔥 最新发布</a>`;
+                html += validCats.map(c => 
+                    `<a href="index.html?cat=${encodeURIComponent(c.name)}" class="nav-item" title="${c.name}">${c.name}</a>`
                 ).join('');
                 navGrid.innerHTML = html;
             } catch (e) {
@@ -111,13 +169,13 @@
         }
 
         function cleanHtmlTags(str) {
-            if (!str) return "No description available.";
-            return str.replace(/<[^>]+>/g, '').trim();
+            if (!str) return "暂无简介";
+            return str.replace(/<[^>]+>/g, '').trim() || "暂无简介";
         }
 
         async function loadVideoDetail() {
             if (!videoId) {
-                document.getElementById('videoTitle').innerText = "Error: No video ID provided.";
+                document.getElementById('videoTitle').innerText = "错误：未指定影片 ID";
                 return;
             }
 
@@ -127,7 +185,7 @@
                 const dataFile = vodLookup[videoId];
 
                 if (!dataFile) {
-                    document.getElementById('videoTitle').innerText = "Video not found in local cache.";
+                    document.getElementById('videoTitle').innerText = "未找到该影片数据，请确认采集已完成。";
                     return;
                 }
 
@@ -136,16 +194,18 @@
                 const video = chunkData.find(v => String(v.id) === String(videoId));
 
                 if (!video) {
-                    document.getElementById('videoTitle').innerText = "Video details not found.";
+                    document.getElementById('videoTitle').innerText = "影片详情加载失败。";
                     return;
                 }
 
                 document.getElementById('videoTitle').innerText = video.title;
                 document.title = `${video.title} - StreamVault`;
-                document.getElementById('videoMeta').innerText = `Category: ${video.category} | Year: ${video.year || 'N/A'} | Area: ${video.area || 'N/A'}`;
-                
-                const cleanDesc = cleanHtmlTags(video.content);
-                document.getElementById('videoDesc').innerText = cleanDesc ? `Description: ${cleanDesc}` : "No description available.";
+                document.getElementById('videoMeta').innerHTML = `
+                    <span class="tag">分类：${video.category}</span>
+                    <span class="tag">年份：${video.year || '2026'}</span>
+                    <span class="tag">地区：${video.area || '未知'}</span>
+                `;
+                document.getElementById('videoDesc').innerText = cleanHtmlTags(video.content);
 
                 const episodes = video.episodes || [];
                 if (episodes.length > 0) {
@@ -155,18 +215,18 @@
 
                     epGrid.innerHTML = episodes.map((ep, idx) => `
                         <button class="ep-btn ${idx === 0 ? 'active' : ''}" onclick="playEpisode('${ep.url}', this)">
-                            ${ep.name || `Episode ${idx + 1}`}
+                            ${ep.name || `第 ${idx + 1} 集`}
                         </button>
                     `).join('');
 
                     playEpisode(episodes[0].url);
                 } else {
-                    document.getElementById('playerFrame').srcdoc = '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100%;font-family:sans-serif;">No valid playback source found.</div>';
+                    document.getElementById('playerFrame').srcdoc = '<div style="color:#888;display:flex;align-items:center;justify-content:center;height:100%;font-family:sans-serif;font-size:14px;">暂无有效播放源</div>';
                 }
 
             } catch (e) {
-                console.error("Failed to load video details:", e);
-                document.getElementById('videoTitle').innerText = "Failed to load video data.";
+                console.error("加载播放页失败:", e);
+                document.getElementById('videoTitle').innerText = "加载影片数据时发生错误。";
             }
         }
 
