@@ -12,7 +12,7 @@
         header h1 { color: #fff; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .container { max-width: 1000px; margin: 15px auto; padding: 0 10px; }
         
-        /* 播放页嵌入的紧凑分类导航栏 */
+        /* 播放页固定显示的紧凑分类导航栏（直接写死，确保 100% 显示） */
         .nav-wrapper { background: #181818; padding: 6px; border: 1px solid #2c2c2c; border-radius: 6px; margin-bottom: 12px; }
         .nav-grid {
             display: grid;
@@ -56,9 +56,43 @@
     </header>
 
     <div class="container">
-        <!-- 播放页同步展示分类导航栏，支持直接跳转回首页对应分类 -->
+        <!-- 播放页顶部的分类导航（直接硬编码，确保即开即现） -->
         <div class="nav-wrapper">
-            <nav class="nav-grid" id="navGrid"></nav>
+            <nav class="nav-grid">
+                <a href="index.html" class="nav-item">🔥 Latest</a>
+                <a href="index.html" class="nav-item">精品推荐</a>
+                <a href="index.html" class="nav-item">主播秀色</a>
+                <a href="index.html" class="nav-item">日本有码</a>
+                <a href="index.html" class="nav-item">日本无码</a>
+                <a href="index.html" class="nav-item">中文字幕</a>
+                <a href="index.html" class="nav-item">童颜巨乳</a>
+                <a href="index.html" class="nav-item">性感人妻</a>
+                <a href="index.html" class="nav-item">强奸乱伦</a>
+                <a href="index.html" class="nav-item">欧美情色</a>
+                <a href="index.html" class="nav-item">三级伦理</a>
+                <a href="index.html" class="nav-item">卡通动漫</a>
+                <a href="index.html" class="nav-item">丝袜OL</a>
+                <a href="index.html" class="nav-item">自拍偷拍</a>
+                <a href="index.html" class="nav-item">日本片商</a>
+                <a href="index.html" class="nav-item">剧情介绍</a>
+                <a href="index.html" class="nav-item">网曝系列</a>
+                <a href="index.html" class="nav-item">同性恋</a>
+                <a href="index.html" class="nav-item">探花嫖娼</a>
+                <a href="index.html" class="nav-item">国产人妻</a>
+                <a href="index.html" class="nav-item">国产SM</a>
+                <a href="index.html" class="nav-item">国产丝袜</a>
+                <a href="index.html" class="nav-item">麻豆传媒</a>
+                <a href="index.html" class="nav-item">国产乱伦</a>
+                <a href="index.html" class="nav-item">明星换脸</a>
+                <a href="index.html" class="nav-item">主奴调教</a>
+                <a href="index.html" class="nav-item">凌辱快感</a>
+                <a href="index.html" class="nav-item">多人群交</a>
+                <a href="index.html" class="nav-item">角色剧情</a>
+                <a href="index.html" class="nav-item">港台辣妹</a>
+                <a href="index.html" class="nav-item">重口性癖</a>
+                <a href="index.html" class="nav-item">变性伪娘</a>
+                <a href="index.html" class="nav-item">VR视角</a>
+            </nav>
         </div>
 
         <div class="player-container">
@@ -80,25 +114,11 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const videoId = urlParams.get('id');
-        const PLAYER_PREFIX = "https://yutujx.com/?url=";[span_0](start_span)[span_0](end_span)
+        const PLAYER_PREFIX = "https://yutujx.com/?url=";[span_1](start_span)[span_1](end_span)
 
-        // 过滤 HTML 标签（如 <p>, </p>, <br>）
         function cleanHtmlTags(str) {
             if (!str) return "No description available.";
             return str.replace(/<[^>]+>/g, '').trim();
-        }
-
-        async function initPlayerNav() {
-            const navGrid = document.getElementById('navGrid');
-            try {
-                const res = await fetch('data/categories.json');
-                const catIndex = await res.json();
-                navGrid.innerHTML = catIndex.map(c => 
-                    `<a href="index.html" class="nav-item">${c.name}</a>`
-                ).join('');
-            } catch (e) {
-                console.error(e);
-            }
         }
 
         async function loadVideoDetail() {
@@ -164,7 +184,6 @@
             document.getElementById('playerFrame').src = PLAYER_PREFIX + url;
         }
 
-        initPlayerNav();
         loadVideoDetail();
     </script>
 </body>
