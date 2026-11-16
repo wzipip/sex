@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>正在播放 - StreamVault</title>
-    <!-- 引入开源无广告 HLS 播放核心库 -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root {
             --bg-main: #0f1014;
@@ -74,15 +72,13 @@
             background: #282b36; color: #fff; border-color: rgba(255,255,255,0.12);
         }
 
-        /* 原生播放器容器 */
+        /* 播放器容器 */
         .player-box {
             position: relative; width: 100%; padding-top: 56.25%;
             background: #000; border-radius: 8px; overflow: hidden;
             border: 1px solid var(--border-color); box-shadow: 0 6px 24px rgba(0,0,0,0.4);
         }
-        .player-box video {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; outline: none;
-        }
+        .player-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
         /* 选集面板 */
         .episodes-card {
@@ -134,9 +130,8 @@
             <nav class="nav-grid" id="navGrid"></nav>
         </div>
 
-        <!-- 原生 HTML5 视频播放器 -->
         <div class="player-box">
-            <video id="videoPlayer" controls playsinline></video>
+            <iframe id="playerFrame" allowfullscreen></iframe>
         </div>
 
         <div class="episodes-card" id="episodesSection" style="display: none;">
@@ -144,4 +139,122 @@
             <div class="episodes-grid" id="episodesGrid"></div>
         </div>
 
-        <div class="detail-card
+        <div class="detail-card">
+            <h1 id="videoTitle">正在加载影片...</h1>
+            <div class="meta-tags" id="videoMeta"></div>
+            <p class="desc-text" id="videoDesc"></p>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoId = urlParams.get('id');
+        const PLAYER_PREFIX = "https://yutujx.com/?url=";
+
+        async function initPlayer() {
+            try {
+                const res = await fetch('data/categories.json');
+                const catIndex = await res.json();
+                const validCats = catIndex.filter(c => 
+                    c.name !== '🔥 Latest Releases' && 
+                    c.name !== 'Uncategorized' && 
+                    Number(c.count) > 0
+                );
+
+                let html = `<a href="index.html" class="nav-item">🔥 最新发布</a>`;
+                html += validCats.map(c => 
+                    `<a href="index.html?cat=${encodeURIComponent(c.name)}" class="nav-item" title="${c.name}">${c.name}</a>`
+                ).join('');
+                document.getElementById('navGrid').innerHTML = html;
+            } catch (e) {
+                console.error("加载导航失败", e);
+            }
+
+            if (!videoId) {
+                document.getElementById('videoTitle').innerText = "错误：未指定影片 ID";
+                return;
+            }
+
+            let video = null;
+            try {
+                const lookupRes = await fetch('data/vod_lookup.json');
+                const vodLookup = await lookupRes.json();
+                const dataFile = vodLookup[videoId];
+
+                if (dataFile) {
+                    const chunkRes = await fetch(`data/${dataFile}`);
+                    const chunkData = await chunkRes.json();
+                    video = chunkData.find(v => String(v.id) === String(videoId));
+                }
+
+                if (!video) {
+                    const catRes = await fetch('data/categories.json');
+                    const catIndex = await catRes.json();
+                    for (let cat of catIndex) {
+                        let files = cat.files || (cat.file ? [cat.file] : []);
+                        for (let f of files) {
+                            try {
+                                const r = await fetch(`data/${f}`);
+                                const chunk = await r.json();
+                                video = chunk.find(v => String(v.id) === String(videoId));
+                                if (video) break;
+                            } catch (err) {}
+                        }
+                        if (video) break;
+                    }
+                }
+
+                if (!video) {
+                    document.getElementById('videoTitle').innerText = "未找到该影片详情，请确认数据已采集完整。";
+                    return;
+                }
+
+                document.getElementById('videoTitle').innerText = video.title;
+                document.title = `${video.title} - StreamVault`;
+                document.getElementById('videoMeta').innerHTML = `
+                    <span class="tag">分类：${video.category || '精选'}</span>
+                    <span class="tag">年份：${video.year || '2026'}</span>
+                    <span class="tag">地区：${video.area || '未知'}</span>
+                `;
+                document.getElementById('videoDesc').innerText = cleanHtmlTags(video.content);
+
+                const episodes = video.episodes || [];
+                if (episodes.length > 0) {
+                    const epSection = document.getElementById('episodesSection');
+                    const epGrid = document.getElementById('episodesGrid');
+                    epSection.style.display = 'block';
+
+                    epGrid.innerHTML = episodes.map((ep, idx) => `
+                        <button class="ep-btn ${idx === 0 ? 'active' : ''}" onclick="playEpisode('${ep.url}', this)">
+                            ${ep.name || `第 ${idx + 1} 集`}
+                        </button>
+                    `).join('');
+
+                    playEpisode(episodes[0].url);
+                } else {
+                    document.getElementById('playerFrame').srcdoc = '<div style="color:#888;display:flex;align-items:center;justify-content:center;height:100%;font-family:sans-serif;font-size:13px;">暂无有效播放源</div>';
+                }
+
+            } catch (e) {
+                console.error("加载播放页失败:", e);
+                document.getElementById('videoTitle').innerText = "加载影片数据时发生错误。";
+            }
+        }
+
+        function cleanHtmlTags(str) {
+            if (!str) return "暂无简介";
+            return str.replace(/<[^>]+>/g, '').trim() || "暂无简介";
+        }
+
+        function playEpisode(url, buttonElement) {
+            if (buttonElement) {
+                document.querySelectorAll('.ep-btn').forEach(btn => btn.classList.remove('active'));
+                buttonElement.classList.add('active');
+            }
+            document.getElementById('playerFrame').src = PLAYER_PREFIX + url;
+        }
+
+        initPlayer();
+    </script>
+</body>
+</html>
