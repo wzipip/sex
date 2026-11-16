@@ -180,7 +180,7 @@
         let currentCategoryMeta = null; 
         let currentPage = 1;
         const pageSize = 24;
-        let categoryItemsCache = {}; // 缓存当前分类的所有影片数据
+        let categoryItemsCache = {}; 
         let searchKeyword = '';
 
         async function initSite() {
@@ -247,21 +247,27 @@
             paginationBar.style.display = 'none';
 
             try {
-                const files = currentCategoryMeta.files || [];
                 const catKey = currentCategoryMeta.name;
+
+                // 兼容多文件分片（files）或单文件旧格式（file）
+                let files = [];
+                if (currentCategoryMeta.files && Array.isArray(currentCategoryMeta.files)) {
+                    files = currentCategoryMeta.files;
+                } else if (currentCategoryMeta.file) {
+                    files = [currentCategoryMeta.file];
+                }
 
                 if (files.length === 0) {
                     grid.innerHTML = '<div style="color:#888; grid-column: 1/-1; text-align:center; padding: 35px;">该分类暂无影片</div>';
                     return;
                 }
 
-                // 如果尚未缓存该分类的所有数据，则并行请求该分类下的所有页分片文件
                 if (!categoryItemsCache[catKey]) {
-                    const promises = files.map(f => fetch(`data/${f}`).then(r => r.json()));
+                    const promises = files.map(f => fetch(`data/${f}`).then(r => r.json()).catch(() => []));
                     const results = await Promise.all(promises);
                     let allItems = [];
                     results.forEach(chunk => {
-                        allItems = allItems.concat(chunk);
+                        if (Array.isArray(chunk)) allItems = allItems.concat(chunk);
                     });
                     categoryItemsCache[catKey] = allItems;
                 }
@@ -279,7 +285,6 @@
             const catKey = currentCategoryMeta.name;
             const allItems = categoryItemsCache[catKey] || [];
 
-            // 过滤搜索关键字
             let targetList = allItems;
             if (searchKeyword) {
                 targetList = allItems.filter(v => v.title.toLowerCase().includes(searchKeyword));
